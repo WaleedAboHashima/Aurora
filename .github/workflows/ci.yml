@@ -31,7 +31,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
 
       # Same ruff version as .pre-commit-config.yaml, so CI and a local commit
       # cannot disagree about what passes. Blocking: the tree is clean today.
