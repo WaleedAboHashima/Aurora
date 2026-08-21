@@ -1,0 +1,186 @@
+/* =============================================================================
+   Aurora — navigation sidebar
+   Frappe v16 renders the primary nav as `.body-sidebar` with
+   `.standard-sidebar-item > .item-anchor` rows. We keep the structure and
+   restyle it into a floating glass rail with an animated selection pill.
+   ========================================================================== */
+
+.body-sidebar {
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(20px);
+	backdrop-filter: saturate(180%) blur(20px);
+	border-right: 1px solid var(--border-color);
+	gap: calc(12px * var(--aurora-density));
+	transition: width var(--aurora-dur-3) var(--aurora-ease-out),
+		background-color var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.body-sidebar::after {
+	/* a faint accent wash bleeding in from the top of the rail */
+	content: "";
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 180px;
+	background: linear-gradient(180deg, var(--aurora-softer), transparent);
+	pointer-events: none;
+}
+
+/* --- rows ---------------------------------------------------------------- */
+.body-sidebar .standard-sidebar-item {
+	border-radius: var(--border-radius);
+	isolation: isolate;
+}
+
+.body-sidebar .standard-sidebar-item .item-anchor {
+	height: calc(32px * var(--aurora-density));
+	border-radius: var(--border-radius);
+	position: relative;
+	gap: 4px;
+	transition: color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* the hover wash is a pseudo element so it can scale rather than pop */
+.body-sidebar .standard-sidebar-item .item-anchor::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	background: var(--aurora-soft);
+	opacity: 0;
+	transform: scale(0.92);
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.body-sidebar .standard-sidebar-item:not(.active-sidebar) .item-anchor:hover::before {
+	opacity: 1;
+	transform: scale(1);
+}
+
+.body-sidebar .standard-sidebar-item:not(.active-sidebar) .item-anchor:hover {
+	color: var(--aurora-700);
+	transform: translateX(2px);
+}
+
+.body-sidebar .standard-sidebar-item .item-anchor:active {
+	transform: scale(0.98);
+}
+
+/* icons get a small, cheerful lift */
+.body-sidebar .sidebar-item-icon {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.body-sidebar .standard-sidebar-item .item-anchor:hover .sidebar-item-icon {
+	transform: translateY(-1px) scale(1.1);
+}
+
+/* --- selected row -------------------------------------------------------- */
+.body-sidebar .active-sidebar,
+.body-sidebar .standard-sidebar-item.active-sidebar {
+	background: transparent;
+	box-shadow: none;
+}
+
+.body-sidebar .active-sidebar > .item-anchor,
+.body-sidebar .active-sidebar .item-anchor {
+	color: var(--aurora-700);
+	font-weight: var(--weight-medium);
+}
+
+.body-sidebar .active-sidebar .item-anchor::before {
+	opacity: 1;
+	transform: scale(1);
+	background: var(--aurora-gradient-soft);
+	box-shadow: inset 0 0 0 1px var(--aurora-ring);
+}
+
+/* the accent bar that slides in on selection */
+.body-sidebar .active-sidebar .item-anchor::after {
+	content: "";
+	position: absolute;
+	left: -8px;
+	top: 50%;
+	width: 3px;
+	height: 60%;
+	border-radius: 999px;
+	background: var(--aurora-gradient);
+	transform: translateY(-50%) scaleY(0);
+	transform-origin: center;
+	animation: aurora-bar-in var(--aurora-dur-3) var(--aurora-ease-spring) forwards;
+}
+
+@keyframes aurora-bar-in {
+	to { transform: translateY(-50%) scaleY(1); }
+}
+
+[data-theme="dark"] .body-sidebar .active-sidebar .item-anchor,
+[data-theme="dark"] .body-sidebar .standard-sidebar-item:not(.active-sidebar) .item-anchor:hover {
+	color: var(--aurora-300);
+}
+
+/* --- section headings ---------------------------------------------------- */
+.body-sidebar .section-item .sidebar-item-label {
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	font-size: var(--text-tiny);
+	color: var(--text-muted);
+	font-weight: var(--weight-semibold);
+}
+
+/* --- workspace header ---------------------------------------------------- */
+.sidebar-header {
+	border-radius: var(--border-radius-md);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* Only the expanded rail gets a full-width hover pill. Core sizes this element
+   at 48px tall / full width, so in the 50px collapsed rail the same background
+   would render as a tall rectangle behind a 32px logo. The collapsed case is
+   handled in _shell.scss, where the header becomes a square target. */
+.body-sidebar-container.expanded .sidebar-header:hover {
+	background: var(--aurora-soft);
+}
+
+.sidebar-header .sidebar-item-icon {
+	border-radius: var(--border-radius-sm);
+	box-shadow: var(--shadow-sm);
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.sidebar-header:hover .sidebar-item-icon {
+	transform: rotate(-6deg) scale(1.06);
+}
+
+.sidebar-header .drop-icon {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.sidebar-header[aria-expanded="true"] .drop-icon,
+.sidebar-header.opened .drop-icon {
+	transform: rotate(180deg);
+}
+
+/* --- entrance ------------------------------------------------------------ */
+.body-sidebar .sidebar-items > .sidebar-item-container {
+	animation: aurora-slide-in-left var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 22ms);
+}
+
+/* --- mobile drawer ------------------------------------------------------- */
+@media (max-width: 767px) {
+	.body-sidebar {
+		box-shadow: var(--shadow-2xl);
+	}
+
+	.body-sidebar-container .overlay {
+		-webkit-backdrop-filter: blur(4px);
+		backdrop-filter: blur(4px);
+		background: var(--aurora-scrim);
+		animation: aurora-fade-in var(--aurora-dur-2) var(--aurora-ease) backwards;
+	}
+}

@@ -1,0 +1,151 @@
+/* =============================================================================
+   Aurora — ERPNext-specific surfaces
+   ERPNext ships a handful of bespoke screens (POS, plant floor, tree views,
+   dashboards) that don't go through the generic desk components.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Point of Sale
+   -------------------------------------------------------------------------- */
+.point-of-sale-app .pos-card,
+.point-of-sale-app > .items-selector,
+.point-of-sale-app > .customer-cart-container > .customer-section,
+.point-of-sale-app > .customer-cart-container > .cart-container,
+.point-of-sale-app > .payment-container {
+	border-radius: var(--border-radius-lg) !important;
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-sm);
+	transition: box-shadow var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.point-of-sale-app .item-wrapper {
+	border-radius: var(--border-radius-md) !important;
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.point-of-sale-app .item-wrapper:hover {
+	transform: translateY(-3px) scale(1.02);
+	box-shadow: var(--aurora-lift);
+	border-color: var(--aurora-ring);
+}
+
+.point-of-sale-app .item-wrapper:active {
+	transform: scale(0.98);
+	transition-duration: 70ms;
+}
+
+/* a cart row that just changed gets a brief accent flash */
+.point-of-sale-app .cart-item-wrapper {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.point-of-sale-app .cart-item-wrapper:hover {
+	background-color: var(--aurora-soft);
+}
+
+.point-of-sale-app .cart-item-wrapper.aurora-flash {
+	animation: aurora-cart-flash 700ms var(--aurora-ease) backwards;
+}
+
+@keyframes aurora-cart-flash {
+	0% { background-color: var(--aurora-soft); transform: translateX(4px); }
+	100% { background-color: transparent; transform: none; }
+}
+
+.point-of-sale-app .numpad-btn,
+.point-of-sale-app .number-pad .numpad-btn {
+	border-radius: var(--border-radius-md);
+	transition: transform var(--aurora-dur-1) var(--aurora-ease-out),
+		background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.point-of-sale-app .numpad-btn:hover {
+	background-color: var(--aurora-soft);
+}
+
+.point-of-sale-app .numpad-btn:active {
+	transform: scale(0.93);
+}
+
+/* -----------------------------------------------------------------------------
+   Tree views (Chart of Accounts, Item Group, BOM …)
+   -------------------------------------------------------------------------- */
+.tree .tree-link {
+	border-radius: var(--border-radius-sm);
+	padding: 2px 6px;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.tree .tree-link:hover {
+	background-color: var(--aurora-soft);
+	transform: translateX(2px);
+}
+
+.tree .tree-link.active {
+	background: var(--aurora-gradient-soft);
+	box-shadow: inset 0 0 0 1px var(--aurora-ring);
+}
+
+.tree .tree-children {
+	animation: aurora-tree-open var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+}
+
+@keyframes aurora-tree-open {
+	from { opacity: 0; transform: translateY(-4px); }
+	to { opacity: 1; transform: none; }
+}
+
+.tree .node-parent .icon,
+.tree .tree-link .node-parent {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+/* -----------------------------------------------------------------------------
+   Dashboard list items (Stock Balance, Item dashboard …)
+   -------------------------------------------------------------------------- */
+.dashboard-list-item {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		padding-left var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.dashboard-list-item:hover {
+	background-color: var(--aurora-softer);
+	padding-left: 12px;
+}
+
+/* -----------------------------------------------------------------------------
+   Plant floor / workstation cards
+   -------------------------------------------------------------------------- */
+.plant-floor-container .workstation-card {
+	border-radius: var(--border-radius-lg);
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.plant-floor-container .workstation-card:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--aurora-lift);
+}
+
+.ringring {
+	animation-duration: 2.4s !important;
+	animation-timing-function: var(--aurora-ease) !important;
+}
+
+/* -----------------------------------------------------------------------------
+   Financial statements / query report tweaks
+   -------------------------------------------------------------------------- */
+.report-wrapper .dt-scrollable {
+	border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+.exercise-card,
+.price-info {
+	border-radius: var(--border-radius-md);
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}

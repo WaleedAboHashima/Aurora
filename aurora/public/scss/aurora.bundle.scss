@@ -1,0 +1,53 @@
+/* =============================================================================
+   Aurora — a modern, animated theme for Frappe / ERPNext v16
+   -----------------------------------------------------------------------------
+   Loaded through `app_include_css` in aurora/hooks.py. Because app assets are
+   injected in install order (frappe → erpnext → aurora), everything in here
+   lands last and wins without any !important gymnastics.
+
+   Import order matters: tokens first (everything reads them), then the
+   foundations, then components from the outside in — shell, chrome, controls,
+   data, overlays — so later files can safely refine earlier ones.
+   ========================================================================== */
+
+/* foundations */
+@import "./theme/tokens";
+@import "./theme/animations";
+@import "./theme/typography";
+@import "./theme/base";
+@import "./theme/icons";
+
+/* the frame */
+@import "./theme/shell";
+@import "./theme/sidebar";
+@import "./theme/page";
+
+/* interactive parts */
+@import "./theme/controls";
+@import "./theme/fields";
+@import "./theme/inputs";
+
+/* data surfaces */
+@import "./theme/tables";
+@import "./theme/list";
+@import "./theme/form";
+@import "./theme/workspace";
+@import "./theme/cards";
+@import "./theme/charts";
+@import "./theme/desktop";
+
+/* refinement pass over the components above */
+@import "./theme/depth";
+
+/* on top of everything */
+@import "./theme/overlays";
+@import "./theme/toasts";
+@import "./theme/aurora_ui";
+@import "./theme/quicklook";
+@import "./theme/entrance";
+
+/* app-specific */
+@import "./theme/erpnext";
+
+/* last: rules that exist purely to out-specify a longer core selector */
+@import "./theme/overrides";

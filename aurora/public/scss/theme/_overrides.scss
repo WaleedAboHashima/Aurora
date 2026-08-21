@@ -1,0 +1,311 @@
+/* =============================================================================
+   Aurora — specificity answers
+   -----------------------------------------------------------------------------
+   Loading last is enough to win a tie, but not enough to beat a *more specific*
+   core rule. These are the places where frappe/erpnext style the same element
+   through a longer selector, so the theme has to match that reach to land.
+
+   Each block names the core selector it is answering, so this file can be
+   re-checked against a future frappe release rather than guessed at.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Inputs inside data grids
+   core: .grid-body .editable-row .form-control      (border, border-radius)
+   core: .datatable .form-control                    (border-radius, background)
+   Without this, every field inside a child table or report keeps the stock skin.
+   -------------------------------------------------------------------------- */
+.grid-body .editable-row .form-control,
+.form-grid .data-row .form-control,
+.datatable .form-control,
+.dt-cell .form-control {
+	border: none;
+	border-radius: var(--border-radius-tiny);
+	background-color: transparent;
+	box-shadow: none;
+	transition: box-shadow var(--aurora-dur-1) var(--aurora-ease),
+		background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.grid-body .editable-row .form-control:focus,
+.form-grid .data-row .form-control:focus,
+.datatable .form-control:focus,
+.dt-cell .form-control:focus {
+	background-color: var(--fg-color);
+	box-shadow: inset 0 0 0 2px var(--aurora-400);
+}
+
+/* -----------------------------------------------------------------------------
+   Report datatable container
+   core: .report-wrapper .datatable  (border-radius)
+   core: .datatable .dt-scrollable .dt-cell__content  (font-feature-settings)
+   The second one is why tabular figures did not reach the report view.
+   -------------------------------------------------------------------------- */
+.report-wrapper .datatable,
+.report-view .datatable {
+	border-radius: var(--border-radius-md);
+	overflow: hidden;
+}
+
+.datatable .dt-scrollable .dt-cell__content,
+.report-view .datatable .dt-cell__content {
+	font-variant-numeric: tabular-nums slashed-zero;
+	font-feature-settings: "tnum" 1, "zero" 1, "cv05" 1, "cv11" 1;
+}
+
+/* -----------------------------------------------------------------------------
+   Workspace widgets
+   core: .widget.onboarding-widget-box / .widget.new-widget / .widget.sortable-ghost
+   core: [data-page-route="Workspaces"] … .ce-block .widget
+   core: .widget.shortcut-widget-box:hover  (border-color)
+   core: .widget.widget-shadow:hover        (box-shadow)
+   -------------------------------------------------------------------------- */
+.widget.onboarding-widget-box,
+.widget.new-widget,
+[data-page-route="Workspaces"] .codex-editor .ce-block .widget {
+	border-radius: var(--border-radius-lg);
+	border: 1px solid var(--border-color);
+	background-color: var(--card-bg);
+	box-shadow: var(--shadow-xs);
+}
+
+.widget.onboarding-widget-box {
+	background: var(--aurora-gradient-soft);
+	border-color: var(--aurora-ring);
+}
+
+.widget.new-widget {
+	background-color: var(--subtle-accent);
+	border-style: dashed;
+	border-color: var(--border-color);
+	box-shadow: none;
+}
+
+.widget.new-widget:hover {
+	border-color: var(--aurora-400);
+	background-color: var(--aurora-softer);
+}
+
+.widget.shortcut-widget-box:hover,
+.widget.links-widget-box:hover,
+.widget.number-widget-box:hover,
+.widget.chart-widget-box:hover,
+.widget.widget-shadow:hover,
+.widget.quick-list-widget-box:hover {
+	border-color: var(--aurora-ring);
+	box-shadow: var(--aurora-lift);
+}
+
+/* core: .widget .widget-head .widget-label .widget-title (color, letter-spacing) */
+.widget .widget-head .widget-label .widget-title {
+	letter-spacing: var(--aurora-tracking-snug);
+	font-weight: var(--weight-medium);
+}
+
+.widget.shortcut-widget-box:hover .widget-head .widget-label .widget-title {
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .widget.shortcut-widget-box:hover .widget-head .widget-label .widget-title {
+	color: var(--aurora-300);
+}
+
+/* -----------------------------------------------------------------------------
+   Form section headings
+   core: .form-section .section-head  (font-weight, color)
+   -------------------------------------------------------------------------- */
+.form-section .section-head,
+.form-dashboard-section .section-head {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-snug);
+	color: var(--heading-color);
+}
+
+/* -----------------------------------------------------------------------------
+   Button groups at the small / large sizes
+   core: .btn-group-sm > .btn  (font-weight, letter-spacing)
+   core: .btn-group-lg > .btn  (border-radius)
+   The page action bar is built from these, which is where the stock corner on
+   hover was still showing through.
+   -------------------------------------------------------------------------- */
+.btn-group-sm > .btn,
+.btn-group-lg > .btn,
+.btn-group-sm > .btn:hover,
+.btn-group-lg > .btn:hover,
+.btn-group-sm > .btn:focus,
+.btn-group-lg > .btn:focus {
+	font-weight: var(--weight-medium);
+	letter-spacing: 0;
+	border-radius: 0;
+}
+
+.btn-group-sm > .btn:first-child,
+.btn-group-lg > .btn:first-child,
+.btn-group-sm > .btn:first-child:hover,
+.btn-group-lg > .btn:first-child:hover {
+	border-top-left-radius: var(--border-radius);
+	border-bottom-left-radius: var(--border-radius);
+}
+
+.btn-group-sm > .btn:last-child,
+.btn-group-lg > .btn:last-child,
+.btn-group-sm > .btn:last-child:hover,
+.btn-group-lg > .btn:last-child:hover {
+	border-top-right-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+}
+
+.btn-group-sm > .btn:only-child,
+.btn-group-lg > .btn:only-child,
+.input-group-lg > .input-group-prepend > .btn,
+.input-group-lg > .input-group-append > .btn {
+	border-radius: var(--border-radius);
+}
+
+/* -----------------------------------------------------------------------------
+   Text editor toolbar
+   core: .ql-toolbar.ql-snow  (background-color)
+   -------------------------------------------------------------------------- */
+.ql-toolbar.ql-snow {
+	background-color: var(--subtle-accent);
+	border-color: var(--border-color);
+	border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+}
+
+.ql-toolbar.ql-snow + .ql-container.ql-snow {
+	border-color: var(--border-color);
+	border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+}
+
+/* -----------------------------------------------------------------------------
+   Progress bars in dark mode
+   core: [data-theme="dark"] .progress  (background-color)
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] .progress {
+	background-color: var(--control-bg);
+}
+
+/* -----------------------------------------------------------------------------
+   Attachments and side-section labels
+   core: .frappe-control[data-fieldtype="Attach"] .attached-file  (border-radius)
+   core: .layout-side-section .sidebar-label                      (font-weight)
+   -------------------------------------------------------------------------- */
+.frappe-control[data-fieldtype="Attach"] .attached-file,
+.frappe-control[data-fieldtype="Attach Image"] .attached-file {
+	border-radius: var(--border-radius-sm);
+}
+
+.layout-side-section .sidebar-label {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-wide);
+	color: var(--text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   Timeline cards
+   core: .new-timeline .timeline-item .timeline-content.frappe-card
+   -------------------------------------------------------------------------- */
+.new-timeline .timeline-item .timeline-content.frappe-card {
+	background-color: var(--card-bg);
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-xs);
+}
+
+.new-timeline .timeline-item .timeline-content.frappe-card:hover {
+	box-shadow: var(--shadow-base);
+}
+
+/* -----------------------------------------------------------------------------
+   Grid cell validation states must still beat the focus ring
+   core: .editable-form .grid-static-col.invalid  (background-color)
+   -------------------------------------------------------------------------- */
+.editable-form .grid-static-col.invalid,
+.validated-form .grid-static-col.error {
+	background-color: var(--alert-bg-danger);
+	box-shadow: inset 0 0 0 1px var(--red-400);
+	border-radius: var(--border-radius-tiny);
+}
+
+/* -----------------------------------------------------------------------------
+   Skeletons — core's own loading placeholders should shimmer with the theme
+   core: .print-format-skeleton .skeleton-card
+   -------------------------------------------------------------------------- */
+.print-format-skeleton .skeleton-card,
+.list-skeleton .list-skeleton-item {
+	background-image: linear-gradient(
+		90deg,
+		var(--control-bg) 0%,
+		var(--subtle-accent) 40%,
+		var(--aurora-soft) 50%,
+		var(--subtle-accent) 60%,
+		var(--control-bg) 100%
+	);
+	background-size: 220% 100%;
+	animation: aurora-shimmer 1.5s linear infinite;
+}
+
+/* -----------------------------------------------------------------------------
+   Three more longer-reach core selectors
+   core: body[data-route^="Form"] .page-title .title-text   (font-weight, tracking)
+   core: .widget-group .widget-group-head .widget-group-title (font-size, tracking)
+   core: .datatable .dt-header .dt-cell--header .dt-cell__content (font-weight)
+   -------------------------------------------------------------------------- */
+body[data-route^="Form"] .page-title .title-text,
+body[data-route^="List"] .page-title .title-text {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-tight);
+}
+
+.widget-group .widget-group-head .widget-group-title {
+	letter-spacing: var(--aurora-tracking-snug);
+	font-weight: var(--weight-semibold);
+	color: var(--heading-color);
+}
+
+.datatable .dt-header .dt-cell--header .dt-cell__content {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-wide);
+	color: var(--text-muted);
+}
+
+/* =============================================================================
+   Feature switches
+   -----------------------------------------------------------------------------
+   settings.js writes `data-aurora-<feature>="0|1"` onto <html>. JS modules are
+   never started for a feature that is already off, but a module that is already
+   running cannot be torn down — so these rules neutralise the visible effect the
+   moment a switch is flipped, instead of making the user reload.
+   ========================================================================== */
+html[data-aurora-reveal="0"] .aurora-reveal {
+	opacity: 1 !important;
+	animation: none !important;
+}
+
+html[data-aurora-page-transitions="0"] .page-container.aurora-page-enter,
+html[data-aurora-page-transitions="0"] .page-container.aurora-page-enter-back {
+	animation: none !important;
+}
+
+html[data-aurora-tilt="0"] .widget::after {
+	display: none;
+}
+
+html[data-aurora-ripple="0"] .aurora-ripple,
+html[data-aurora-progress-bar="0"] .aurora-progress,
+html[data-aurora-back-to-top="0"] .aurora-to-top,
+html[data-aurora-toast-timers="0"] .aurora-toast-timer {
+	display: none !important;
+}
+
+html[data-aurora-condensed-header="0"] .page-head.aurora-condensed {
+	box-shadow: none;
+	border-bottom-color: var(--border-color);
+}
+
+html[data-aurora-save-pulse="0"] .page-indicator-pill.aurora-saved {
+	animation: none !important;
+}
+
+html[data-aurora-counters="0"] .widget.number-widget-box .number.aurora-counting {
+	color: inherit;
+}

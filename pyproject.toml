@@ -1,0 +1,78 @@
+[project]
+name = "aurora"
+authors = [
+    { name = "Waleed AboHashima", email = "waleedsabry.abohashima@gmail.com"}
+]
+description = "Aurora — a per-user appearance layer for Frappe and ERPNext v16"
+requires-python = ">=3.14"
+readme = "README.md"
+license = "LicenseRef-Aurora"
+license-files = ["LICENSE"]
+dynamic = ["version"]
+dependencies = [
+    # "frappe~=16.0.0" # Installed and managed by bench.
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+# Frappe Cloud reads this to decide whether the app is installable against a
+# given bench. Without it, adding the app fails with "Could not find a
+# compatible Frappe version in pyproject.toml".
+#
+# Bounded to v16 deliberately: Aurora hooks into desk class names, the
+# `.icon`/`.es-icon` split and the boot payload, none of which carry a
+# stability guarantee across a major version. Claiming v17 compatibility
+# before it exists would just mean shipping a broken theme on upgrade day.
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0-dev,<17.0.0"
+
+# These dependencies are only installed when developer mode is enabled
+[tool.bench.dev-dependencies]
+# package_name = "~=1.1.0"
+
+# These apt dependencies will be installed from Ubuntu repositories when you host your app on Frappe Cloud
+[deploy.dependencies.apt]
+packages = []
+
+[tool.ruff]
+line-length = 110
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "W",
+    "I",
+    "UP",
+    "B",
+    "RUF",
+]
+ignore = [
+    "B017", # assertRaises(Exception) - should be more specific
+    "B018", # useless expression, not assigned to anything
+    "B023", # function doesn't bind loop variable - will have last iteration's value
+    "B904", # raise inside except without from
+    "E101", # indentation contains mixed spaces and tabs
+    "E402", # module level import not at top of file
+    "E501", # line too long
+    "E741", # ambiguous variable name
+    "F401", # "unused" imports
+    "F403", # can't detect undefined names from * import
+    "F405", # can't detect undefined names from * import
+    "F722", # syntax error in forward type annotation
+    "W191", # indentation contains tabs
+    "UP030", # Use implicit references for positional format fields (translations)
+    "UP031", # Use format specifiers instead of percent format
+    "UP032", # Use f-string instead of `format` call (translations)
+    "UP037", # quoted annotations
+    "UP040", # Use type aliases instead of type annotations
+]
+typing-modules = ["frappe.types.DF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+docstring-code-format = true

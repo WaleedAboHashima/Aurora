@@ -1,0 +1,128 @@
+/* =============================================================================
+   Aurora — modals, toasts, tooltips and loading states
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Dialogs
+   -------------------------------------------------------------------------- */
+.modal-backdrop.show {
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+	background-color: var(--aurora-scrim);
+	opacity: 1 !important;
+	animation: aurora-fade-in var(--aurora-dur-2) var(--aurora-ease) backwards;
+}
+
+.modal .modal-content {
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-xl);
+	box-shadow: var(--shadow-2xl);
+	overflow: hidden;
+	background-color: var(--modal-bg);
+}
+
+/* override bootstrap's translate-only entrance with a spring */
+.modal.fade .modal-dialog {
+	transition: none;
+	transform: none;
+}
+
+.modal.show .modal-dialog {
+	animation: aurora-dialog-in var(--aurora-dur-3) var(--aurora-ease-spring) backwards;
+	transform: none;
+}
+
+@keyframes aurora-dialog-in {
+	from { opacity: 0; transform: translate3d(0, 24px, 0) scale(0.96); }
+	to { opacity: 1; transform: none; }
+}
+
+.modal .modal-header {
+	border-bottom: 1px solid var(--border-color);
+	background: linear-gradient(180deg, var(--aurora-softer), transparent);
+}
+
+.modal .modal-footer {
+	border-top: 1px solid var(--border-color);
+}
+
+.modal .modal-title {
+	letter-spacing: -0.01em;
+}
+
+/* fields inside a dialog cascade in */
+.modal.show .modal-body .frappe-control {
+	animation: aurora-rise-sm var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+	animation-delay: calc(60ms + var(--aurora-i, 0) * 26ms);
+}
+
+/* Toasts now have their own file: _toasts.scss */
+
+/* -----------------------------------------------------------------------------
+   Tooltips / popovers
+   -------------------------------------------------------------------------- */
+.tooltip .tooltip-inner,
+.popover {
+	border-radius: var(--border-radius-sm);
+	box-shadow: var(--shadow-lg);
+	font-size: var(--text-xs);
+	padding: 5px 9px;
+}
+
+/* Popper-positioned — fade only, never transform. See the dropdown note in
+   _controls.scss for why a transform animation here breaks placement. */
+.tooltip.show {
+	animation: aurora-fade-in var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+/* -----------------------------------------------------------------------------
+   Freeze / busy state
+   -------------------------------------------------------------------------- */
+.freeze {
+	-webkit-backdrop-filter: blur(3px);
+	backdrop-filter: blur(3px);
+	background-color: var(--aurora-scrim) !important;
+	animation: aurora-fade-in var(--aurora-dur-2) var(--aurora-ease) backwards;
+}
+
+.freeze .freeze-message-container .freeze-message {
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-2xl);
+	background: var(--modal-bg);
+	animation: aurora-pop var(--aurora-dur-3) var(--aurora-ease-spring) backwards;
+}
+
+/* frappe's own spinners pick up the accent */
+.freeze-message .lds-ripple div,
+.loading-indicator {
+	border-color: var(--aurora-500) !important;
+}
+
+/* -----------------------------------------------------------------------------
+   Notifications panel
+   -------------------------------------------------------------------------- */
+.notifications-list {
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-xl);
+	border: 1px solid var(--border-color);
+	overflow: hidden;
+	/* this is a .dropdown-menu, so it is Popper-positioned: fade only */
+	animation: aurora-fade-in var(--aurora-dur-3) var(--aurora-ease-out);
+}
+
+.notifications-list .recent-notification,
+.notifications-list .notification-item {
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		padding-left var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.notifications-list .recent-notification:hover {
+	background-color: var(--aurora-soft);
+	padding-left: 16px;
+}
+
+/* unread dot pulses gently */
+.notifications-list .notification-dot,
+.navbar .badge-notify {
+	animation: aurora-breathe 2.6s var(--aurora-ease) infinite;
+}

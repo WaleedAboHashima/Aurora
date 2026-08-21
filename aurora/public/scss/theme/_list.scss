@@ -1,0 +1,325 @@
+/* =============================================================================
+   Aurora — list view
+   -----------------------------------------------------------------------------
+   Core puts the separator on `.list-row` itself and adds an odd inset shadow
+   behind `.level-right` on hover. Both are undone here so the row can be one
+   clean surface with a single accent edge.
+   ========================================================================== */
+
+.frappe-list {
+	border-radius: var(--border-radius-lg);
+}
+
+/* --- rows ---------------------------------------------------------------- */
+.frappe-list .list-row-container {
+	border-bottom: 1px solid var(--border-color);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.frappe-list .list-row-container:last-child {
+	border-bottom: none;
+}
+
+.frappe-list .list-row {
+	position: relative;
+	border-bottom: none; /* the container owns the separator now */
+	border-radius: var(--border-radius-sm);
+	min-height: var(--aurora-row-h);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* core paints a grey smear behind the right-hand column on hover */
+.frappe-list .list-row:hover:not(.list-row-head) .level-right {
+	box-shadow: none;
+}
+
+/* the accent edge that wipes in on hover */
+.frappe-list .list-row::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 6px;
+	bottom: 6px;
+	width: 3px;
+	border-radius: 999px;
+	background: var(--aurora-gradient);
+	transform: scaleY(0);
+	transform-origin: center;
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+	pointer-events: none;
+}
+
+.frappe-list .list-row-container:hover .list-row::before {
+	transform: scaleY(1);
+}
+
+.frappe-list .list-row-container:hover .list-row {
+	background-color: var(--aurora-softer);
+	transform: translateX(2px);
+}
+
+.frappe-list .list-row-container:hover .list-subject a,
+.frappe-list .list-row-container:hover .list-subject .level-item.bold a {
+	color: var(--aurora-700);
+	text-decoration: none;
+}
+
+[data-theme="dark"] .frappe-list .list-row-container:hover .list-subject a {
+	color: var(--aurora-300);
+}
+
+/* --- selection ----------------------------------------------------------- */
+.frappe-list .list-row-container:has(input.list-row-checkbox:checked) .list-row,
+.frappe-list .list-row-container.selected-row .list-row {
+	background: var(--aurora-gradient-soft);
+}
+
+.frappe-list .list-row-container:has(input.list-row-checkbox:checked) .list-row::before {
+	transform: scaleY(1);
+}
+
+/* the checkbox stays out of the way until it is wanted */
+.frappe-list .list-row-col.list-subject .list-row-checkbox {
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+/* --- header row ---------------------------------------------------------- */
+.frappe-list .list-row-head {
+	background: var(--subtle-accent);
+	border-bottom: 1px solid var(--border-color);
+	border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	-webkit-backdrop-filter: saturate(180%) blur(12px);
+	backdrop-filter: saturate(180%) blur(12px);
+}
+
+.frappe-list .list-row-head .list-row::before {
+	display: none;
+}
+
+.frappe-list .list-row-head:hover .list-row {
+	transform: none;
+	background: transparent;
+}
+
+/* sortable column headers */
+.frappe-list .list-row-head .list-row-col:hover {
+	color: var(--aurora-600);
+	cursor: pointer;
+}
+
+/* --- likes, comments, assignments in the right column -------------------- */
+.frappe-list .level-right .list-row-like,
+.frappe-list .list-row .comment-count,
+.frappe-list .list-row .list-assignments {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.frappe-list .list-row-container:hover .list-assignments .avatar-frame {
+	transform: translateY(-1px);
+}
+
+/* --- staggered entrance -------------------------------------------------- */
+.frappe-list .list-row-container.aurora-reveal.aurora-revealed {
+	opacity: 1;
+	animation: aurora-row-in var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * var(--aurora-stagger));
+}
+
+@keyframes aurora-row-in {
+	from { opacity: 0; transform: translate3d(0, 8px, 0); }
+	to { opacity: 1; transform: none; }
+}
+
+/* --- list header / count / bulk actions ---------------------------------- */
+.list-count,
+.list-stats,
+.list-paging-area .list-count {
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.list-row-head .list-select-all,
+.frappe-list .level-left .bulk-actions {
+	animation: aurora-rise-sm var(--aurora-dur-2) var(--aurora-ease-out) backwards;
+}
+
+/* --- filters ------------------------------------------------------------- */
+.filter-section .filter-button,
+.filter-selector .btn,
+.sort-selector .btn,
+.list-count-section .btn {
+	border-radius: var(--border-radius);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.filter-section .filter-button:hover,
+.sort-selector .btn:hover {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+	transform: translateY(-1px);
+}
+
+.filter-button .filter-icon.active,
+.filter-selector .filter-icon.active {
+	--icon-stroke: var(--aurora-600);
+}
+
+/* applied filter chips */
+.filter-area .filter-box .filter-field,
+.tag-link,
+.list-tag {
+	border-radius: var(--border-radius-full);
+	animation: aurora-pop var(--aurora-dur-2) var(--aurora-ease-spring) backwards;
+}
+
+.filter-popover,
+.filter-edit-area {
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-lg);
+	border: 1px solid var(--border-color);
+}
+
+/* --- pagination ---------------------------------------------------------- */
+.list-paging-area {
+	border-top: 1px solid var(--border-color);
+}
+
+.list-paging-area .btn-paging {
+	border-radius: var(--border-radius-full);
+	min-width: 30px;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.list-paging-area .btn-paging:hover {
+	background: var(--aurora-soft);
+	color: var(--aurora-700);
+	transform: scale(1.06);
+}
+
+.list-paging-area .btn-paging.btn-info {
+	background: var(--aurora-gradient);
+	color: #fff;
+	box-shadow: 0 3px 8px -4px var(--aurora-glow);
+}
+
+/* --- list sidebar -------------------------------------------------------- */
+.list-sidebar .sidebar-label {
+	color: var(--text-muted);
+}
+
+.list-sidebar .list-link > a,
+.list-sidebar .list-group-by-fields a {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.list-sidebar .list-link > a:hover,
+.list-sidebar .list-group-by-fields a:hover {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+	transform: translateX(3px);
+	text-decoration: none;
+}
+
+/* --- loading + empty ----------------------------------------------------- */
+.list-skeleton .list-skeleton-item,
+.freeze-row {
+	border-radius: var(--border-radius-sm);
+}
+
+.no-result,
+.msg-box {
+	animation: aurora-pop var(--aurora-dur-4) var(--aurora-ease-spring) backwards;
+}
+
+.no-result img,
+.msg-box img {
+	animation: aurora-breathe 4s var(--aurora-ease) infinite;
+}
+
+/* -----------------------------------------------------------------------------
+   Kanban
+   -------------------------------------------------------------------------- */
+.kanban .kanban-column {
+	border-radius: var(--border-radius-lg);
+	background-color: var(--subtle-accent);
+	border: 1px solid var(--border-color);
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.kanban .kanban-column .kanban-column-title {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-snug);
+}
+
+.kanban .kanban-card {
+	border-radius: var(--border-radius-md);
+	border: 1px solid var(--border-color);
+	background-color: var(--card-bg);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.kanban .kanban-card:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--aurora-lift);
+	border-color: var(--aurora-ring);
+}
+
+.kanban .kanban-card.sortable-ghost {
+	opacity: 0.4;
+	transform: rotate(-1.5deg) scale(1.02);
+}
+
+.kanban .add-card,
+.kanban .kanban-column .add-card {
+	border-radius: var(--border-radius-md);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.kanban .add-card:hover {
+	background-color: var(--aurora-soft);
+}
+
+/* -----------------------------------------------------------------------------
+   Gallery / image view, calendar, gantt — light touch, same vocabulary
+   -------------------------------------------------------------------------- */
+.image-view-container .image-view-item {
+	border-radius: var(--border-radius-md);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.image-view-container .image-view-item:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--aurora-lift);
+}
+
+.fc-event,
+.gantt .bar-wrapper .bar {
+	border-radius: var(--border-radius-sm);
+}
+
+.fc-event {
+	border: none;
+	background: var(--aurora-gradient);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.fc-event:hover {
+	transform: scale(1.02);
+}

@@ -1,0 +1,179 @@
+/* =============================================================================
+   Aurora — motion library
+   Every animated affordance in the theme is built out of these primitives so
+   timing stays consistent, and so a single switch can turn all of it off.
+   ========================================================================== */
+
+@keyframes aurora-fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes aurora-rise {
+	from { opacity: 0; transform: translate3d(0, 12px, 0); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-rise-sm {
+	from { opacity: 0; transform: translate3d(0, 6px, 0); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-slide-in-left {
+	from { opacity: 0; transform: translate3d(-14px, 0, 0); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-pop {
+	0% { opacity: 0; transform: scale(0.94) translate3d(0, 10px, 0); }
+	100% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+
+@keyframes aurora-zoom-out {
+	from { opacity: 1; transform: scale(1); }
+	to { opacity: 0; transform: scale(0.97); }
+}
+
+@keyframes aurora-ripple {
+	to { transform: scale(2.6); opacity: 0; }
+}
+
+@keyframes aurora-shimmer {
+	0% { background-position: -220% 0; }
+	100% { background-position: 220% 0; }
+}
+
+@keyframes aurora-spin {
+	to { transform: rotate(360deg); }
+}
+
+@keyframes aurora-pulse-ring {
+	0% { box-shadow: 0 0 0 0 var(--aurora-ring); }
+	70% { box-shadow: 0 0 0 10px hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0); }
+	100% { box-shadow: 0 0 0 0 hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0); }
+}
+
+@keyframes aurora-breathe {
+	0%, 100% { opacity: 0.55; transform: scale(1); }
+	50% { opacity: 1; transform: scale(1.06); }
+}
+
+@keyframes aurora-indeterminate {
+	0% { transform: translateX(-100%) scaleX(0.3); }
+	50% { transform: translateX(10%) scaleX(0.6); }
+	100% { transform: translateX(100%) scaleX(0.35); }
+}
+
+@keyframes aurora-drift {
+	0% { transform: translate3d(0, 0, 0) scale(1); }
+	50% { transform: translate3d(2%, -3%, 0) scale(1.06); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes aurora-check-pop {
+	0% { transform: scale(0.6); opacity: 0; }
+	60% { transform: scale(1.15); opacity: 1; }
+	100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes aurora-count-flash {
+	0% { color: var(--aurora-500); }
+	100% { color: inherit; }
+}
+
+/* --- reusable classes ---------------------------------------------------- */
+.aurora-animate-rise { animation: aurora-rise var(--aurora-dur-3) var(--aurora-ease-out) backwards; }
+.aurora-animate-pop { animation: aurora-pop var(--aurora-dur-3) var(--aurora-ease-spring) backwards; }
+.aurora-animate-fade { animation: aurora-fade-in var(--aurora-dur-2) var(--aurora-ease) backwards; }
+
+/* Elements the reveal engine is watching start invisible and are released
+   one by one; `--aurora-i` is the element's index in its group. */
+.aurora-reveal {
+	opacity: 0;
+	will-change: opacity, transform;
+}
+
+.aurora-reveal.aurora-revealed {
+	/* the base rule above is opacity: 0, so the resting value has to be stated
+	   here — with `backwards` the animation does not hold it after it ends */
+	opacity: 1;
+	animation: aurora-rise-sm var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * var(--aurora-stagger));
+}
+
+/* Shimmer placeholder — applied to frappe's own skeleton nodes. */
+.aurora-shimmer,
+.list-skeleton .list-skeleton-item,
+.skeleton-card {
+	background-image: linear-gradient(
+		90deg,
+		var(--control-bg) 0%,
+		var(--subtle-accent) 40%,
+		var(--aurora-soft) 50%,
+		var(--subtle-accent) 60%,
+		var(--control-bg) 100%
+	);
+	background-size: 220% 100%;
+	animation: aurora-shimmer 1.5s linear infinite;
+}
+
+/* -----------------------------------------------------------------------------
+   Global motion kill-switch.
+   `prefers-reduced-motion` is honoured automatically; the control panel can also
+   force it off for users on slow machines.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	html:not([data-aurora-motion="on"]) *,
+	html:not([data-aurora-motion="on"]) *::before,
+	html:not([data-aurora-motion="on"]) *::after {
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 1ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+html[data-aurora-motion="off"] *,
+html[data-aurora-motion="off"] *::before,
+html[data-aurora-motion="off"] *::after {
+	animation-duration: 1ms !important;
+	animation-delay: 0ms !important;
+	animation-iteration-count: 1 !important;
+	transition-duration: 1ms !important;
+	transition-delay: 0ms !important;
+}
+
+html[data-aurora-motion="off"] .aurora-reveal { opacity: 1; }
+html[data-aurora-motion="off"] .aurora-backdrop-over { animation: none; }
+
+/* =============================================================================
+   Stagger index
+   -----------------------------------------------------------------------------
+   `--aurora-i` is read by every staggered animation in the theme (list rows,
+   dropdown items, widgets, chart marks, legend chips) as
+   `animation-delay: calc(var(--aurora-i) * <step>)`.
+
+   It used to be nobody's job to set it. `utils.js` exports `stamp_index()` for
+   exactly this, but nothing ever called it — so `var(--aurora-i, 0)` fell
+   through to the fallback everywhere and every "stagger" in the theme fired all
+   at once. Setting it here instead of from JS means it applies to nodes frappe
+   creates later without anything having to notice them, and there is no stamp
+   to go stale on re-render.
+
+   Capped at 14: beyond that the delay is longer than anyone waits, and the tail
+   of a long list should arrive immediately rather than dribbling in.
+   ========================================================================== */
+@for $i from 1 through 14 {
+	.widget:nth-child(#{$i}),
+	.frappe-list .list-row-container:nth-child(#{$i}),
+	.dropdown-menu.show > .dropdown-item:nth-child(#{$i}),
+	.dropdown-menu.show > li:nth-child(#{$i}) > .dropdown-item,
+	html[data-aurora-charts="1"] .chart-container .bar:nth-child(#{$i}),
+	html[data-aurora-charts="1"] .chart-container rect.bar:nth-child(#{$i}),
+	html[data-aurora-charts="1"] .chart-container .pie-path:nth-child(#{$i}),
+	html[data-aurora-charts="1"] .chart-container .progress-bar:nth-child(#{$i}),
+	html[data-aurora-charts="1"] .chart-container .heatmap .day:nth-child(#{$i}),
+	.chart-legend .legend-item:nth-child(#{$i}) {
+		--aurora-i: #{$i - 1};
+	}
+}

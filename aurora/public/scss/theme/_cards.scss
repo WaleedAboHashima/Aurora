@@ -1,0 +1,408 @@
+/* =============================================================================
+   Aurora — cards
+   -----------------------------------------------------------------------------
+   "Card" covers four different things in the desk, and stock frappe gives them
+   all the same flat treatment:
+
+     number-widget-box    a single KPI figure + trend
+     chart-widget-box     a plot with a title
+     shortcut-widget-box  a link tile with a count pill
+     links-widget-box     a grouped list of links
+     quick-list-widget-box a compact recent-records list
+
+   This file gives each one a job-appropriate identity while keeping a single
+   shared frame, so a workspace reads as one board.
+
+   Gated by `html[data-aurora-cards="0"]`.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Shared frame
+   -------------------------------------------------------------------------- */
+.widget {
+	position: relative;
+	background-color: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-lg);
+	box-shadow: 0 1px 2px hsl(var(--aurora-shadow-color) / 0.05),
+		0 6px 16px -12px hsl(var(--aurora-shadow-color) / 0.18);
+	overflow: hidden;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-3) var(--aurora-ease),
+		border-color var(--aurora-dur-3) var(--aurora-ease);
+}
+
+/* a hairline of accent along the top edge, revealed on hover — the cheapest way
+   to make a grid of cards feel like one designed system */
+.widget::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: var(--aurora-gradient);
+	transform: scaleX(0);
+	transform-origin: left center;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-out);
+	z-index: 1;
+	pointer-events: none;
+}
+
+.widget:hover::before {
+	transform: scaleX(1);
+}
+
+.widget:hover {
+	transform: translateY(-3px);
+	border-color: var(--aurora-ring);
+	box-shadow: var(--aurora-lift);
+}
+
+/* -----------------------------------------------------------------------------
+   Card heads
+   -------------------------------------------------------------------------- */
+.widget .widget-head .widget-label .widget-title {
+	font-weight: var(--weight-medium);
+	letter-spacing: var(--aurora-tracking-snug);
+	color: var(--text-color);
+}
+
+.widget .widget-head .widget-subtitle,
+.widget .widget-footer {
+	color: var(--text-muted);
+	font-size: var(--text-xs);
+}
+
+/* card controls stay out of the way until the card is hovered */
+.widget .widget-control {
+	opacity: 0;
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget:hover .widget-control,
+.widget:focus-within .widget-control {
+	opacity: 1;
+}
+
+/* -----------------------------------------------------------------------------
+   Number cards — the figure is the point, so it gets the space and the weight
+   -------------------------------------------------------------------------- */
+.widget.number-widget-box .widget-body .number {
+	font-size: var(--text-4xl);
+	font-weight: var(--weight-semibold);
+	letter-spacing: -0.03em;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums slashed-zero;
+	color: var(--heading-color);
+	transition: color var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.widget.number-widget-box .widget-body .number.aurora-counting {
+	color: var(--aurora-600);
+}
+
+/* the accent halo that blooms behind the figure on hover */
+.widget.number-widget-box::after {
+	content: "";
+	position: absolute;
+	right: -40px;
+	top: -50px;
+	width: 170px;
+	height: 170px;
+	border-radius: 50%;
+	background: var(--aurora-gradient);
+	filter: blur(34px);
+	opacity: 0;
+	transition: opacity var(--aurora-dur-4) var(--aurora-ease);
+	pointer-events: none;
+}
+
+.widget.number-widget-box:hover::after {
+	opacity: 0.16;
+}
+
+/* trend pill */
+.widget.number-widget-box .percentage-stat-area .indicator-pill {
+	border-radius: var(--border-radius-full);
+	font-weight: var(--weight-medium);
+	font-variant-numeric: tabular-nums;
+	animation: aurora-pop var(--aurora-dur-3) var(--aurora-ease-spring) backwards;
+	animation-delay: 160ms;
+}
+
+/* -----------------------------------------------------------------------------
+   Shortcut cards — these are buttons, so they should feel like buttons
+   -------------------------------------------------------------------------- */
+.widget.shortcut-widget-box {
+	cursor: pointer;
+}
+
+.widget.shortcut-widget-box:hover .widget-head .widget-label .widget-title {
+	color: var(--aurora-700);
+	transform: translateX(3px);
+}
+
+[data-theme="dark"] .widget.shortcut-widget-box:hover .widget-head .widget-label .widget-title {
+	color: var(--aurora-300);
+}
+
+.widget.shortcut-widget-box .widget-head .widget-label .widget-title {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget.shortcut-widget-box .indicator-pill {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.widget.shortcut-widget-box:hover .indicator-pill {
+	transform: scale(1.07);
+}
+
+.widget.shortcut-widget-box:active {
+	transform: translateY(-1px) scale(0.99);
+	transition-duration: 80ms;
+}
+
+/* -----------------------------------------------------------------------------
+   Link and quick-list cards — rows, not blocks
+   -------------------------------------------------------------------------- */
+.widget.links-widget-box .link-item,
+.widget.quick-list-widget-box .quick-list-item {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget.links-widget-box .link-item:hover,
+.widget.quick-list-widget-box .quick-list-item:hover {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+	transform: translateX(3px);
+	text-decoration: none;
+}
+
+[data-theme="dark"] .widget.links-widget-box .link-item:hover,
+[data-theme="dark"] .widget.quick-list-widget-box .quick-list-item:hover {
+	color: var(--aurora-300);
+}
+
+/* -----------------------------------------------------------------------------
+   Chart cards — the plot needs room, so the chrome gets quieter
+   -------------------------------------------------------------------------- */
+.widget.chart-widget-box .widget-head {
+	padding-bottom: 2px;
+}
+
+.widget.chart-widget-box .chart-container {
+	margin-top: 2px;
+}
+
+/* -----------------------------------------------------------------------------
+   Onboarding card keeps its own, friendlier identity
+   -------------------------------------------------------------------------- */
+.widget.onboarding-widget-box {
+	background: var(--aurora-gradient-soft);
+	border-color: var(--aurora-ring);
+}
+
+.widget.onboarding-widget-box::before {
+	transform: scaleX(1);
+}
+
+/* -----------------------------------------------------------------------------
+   Dashboard / form cards outside the workspace grid, same vocabulary
+   -------------------------------------------------------------------------- */
+.dashboard-section .section-body .card,
+.form-dashboard-section .document-link,
+.form-links .document-link {
+	border-radius: var(--border-radius-md);
+	border: 1px solid var(--border-color);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.form-links .document-link:hover {
+	transform: translateY(-2px);
+	border-color: var(--aurora-ring);
+	box-shadow: var(--aurora-lift);
+}
+
+/* -----------------------------------------------------------------------------
+   Off switch — back to a plain bordered box with no accent or motion
+   -------------------------------------------------------------------------- */
+html[data-aurora-cards="0"] .widget::before,
+html[data-aurora-cards="0"] .widget.number-widget-box::after,
+html[data-aurora-cards="0"] .widget::after {
+	display: none;
+}
+
+html[data-aurora-cards="0"] .widget {
+	box-shadow: var(--shadow-xs);
+}
+
+html[data-aurora-cards="0"] .widget:hover {
+	transform: none;
+	box-shadow: var(--shadow-sm);
+	border-color: var(--border-color);
+}
+
+html[data-aurora-cards="0"] .widget .widget-control {
+	opacity: 1;
+}
+
+html[data-aurora-cards="0"] .widget.number-widget-box .widget-body .number {
+	font-size: var(--text-3xl);
+}
+
+html[data-aurora-cards="0"] .widget.links-widget-box .link-item:hover,
+html[data-aurora-cards="0"] .widget.quick-list-widget-box .quick-list-item:hover {
+	transform: none;
+}
+
+/* =============================================================================
+   Aurora — dashboards, the animated pass
+   -----------------------------------------------------------------------------
+   The widgets above already carry the theme's surface language, but everything
+   expressive about them was on `:hover` — so a dashboard sitting on a wall, or
+   simply being read rather than poked at, looked like plain boxes. This pass
+   moves the character into the resting state and gives the grid an entrance.
+
+   Additive on purpose: nothing here re-declares a property the rules above own,
+   so the two layers cannot fight. Motion is `transform`/`opacity` only.
+   ========================================================================== */
+
+/* --- the grid arrives in sequence ---------------------------------------- */
+.widget-group .widget-group-body .widget,
+.dashboard-section .widget,
+.layout-main-section .widget-group-body .widget {
+	animation: aurora-widget-in 620ms var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 55ms);
+}
+
+@keyframes aurora-widget-in {
+	from { opacity: 0; transform: translateY(10px) scale(0.985); }
+	to { opacity: 1; transform: none; }
+}
+
+/* --- number cards: state you can read from across the room --------------- */
+
+/* the accent edge is no longer hover-only — a KPI card should look live at rest */
+.widget.number-widget-box::before {
+	opacity: 0.65;
+}
+
+.widget.number-widget-box:hover::before {
+	opacity: 1;
+}
+
+/* a resting sheen, so the halo is not the only thing giving the card depth */
+.widget.number-widget-box {
+	background-image: linear-gradient(
+		160deg,
+		var(--aurora-softer) 0%,
+		transparent 42%
+	);
+}
+
+/* the figure itself carries the accent as a gradient rather than a flat colour.
+   `background-clip: text` needs a transparent fill, and the fallback if a
+   browser ignores it is the inherited heading colour — which is fine. */
+html[data-aurora-gradients="1"] .widget.number-widget-box .widget-body .number {
+	background: var(--aurora-gradient);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+/* the count-up already runs (js/theme/counters.js); give it a subtle rise so
+   the number arrives rather than simply appearing */
+.widget.number-widget-box .widget-body .number {
+	animation: aurora-number-in 560ms var(--aurora-ease-out) 120ms backwards;
+}
+
+@keyframes aurora-number-in {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: none; }
+}
+
+/* --- chart widgets ------------------------------------------------------- */
+.widget.chart-widget-box:hover {
+	/* lift a touch more than a static card: it reads as interactive, and it is */
+	box-shadow: var(--aurora-lift);
+}
+
+/* the filter/refresh controls should not compete with the plot at rest */
+.widget.chart-widget-box .widget-control {
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* --- shortcut tiles ------------------------------------------------------ */
+.widget.shortcut-widget-box {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget.shortcut-widget-box:hover {
+	transform: translateY(-3px);
+	border-color: var(--aurora-ring);
+}
+
+/* the count pill pops when the tile is hovered, so the number reads as the
+   payload of the tile rather than a decoration */
+.widget.shortcut-widget-box .indicator-pill {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.widget.shortcut-widget-box:hover .indicator-pill {
+	transform: scale(1.08);
+}
+
+/* --- links + quick-list rows -------------------------------------------- */
+.widget.links-widget-box .link-item,
+.widget.quick-list-widget-box .quick-list-item {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.widget.links-widget-box .link-item:hover,
+.widget.quick-list-widget-box .quick-list-item:hover {
+	background-color: var(--aurora-softer);
+	transform: translateX(3px);
+}
+
+/* -----------------------------------------------------------------------------
+   Off switches — reduced motion, and the theme's own card/motion flags.
+   The entrance rules start from opacity 0, so dropping the animation is not
+   enough; the end state has to be restored explicitly or the dashboard is blank.
+   -------------------------------------------------------------------------- */
+html[data-aurora-motion="off"] .widget,
+html[data-aurora-motion="off"] .widget.number-widget-box .widget-body .number,
+html[data-aurora-cards="0"] .widget {
+	animation: none;
+	opacity: 1;
+	transform: none;
+}
+
+html[data-aurora-cards="0"] .widget.number-widget-box {
+	background-image: none;
+}
+
+html[data-aurora-cards="0"] .widget.number-widget-box .widget-body .number {
+	background: none;
+	-webkit-text-fill-color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.widget,
+	.widget.number-widget-box .widget-body .number {
+		animation: none;
+		opacity: 1;
+		transform: none;
+	}
+}

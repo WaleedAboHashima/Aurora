@@ -1,0 +1,137 @@
+/* =============================================================================
+   Aurora — typography
+   -----------------------------------------------------------------------------
+   Frappe drives every font through `--font-stack` (espresso/_typography.scss),
+   so swapping the family is one variable. The rest of this file is the part
+   that actually makes text feel different: OpenType features, optical tracking
+   per size, and tabular numerals everywhere numbers line up in a column.
+   ========================================================================== */
+
+:root {
+	/* Inter ships with frappe; the others are platform faces, so no font ever
+	   has to be fetched over the network and there is no flash of unstyled text. */
+	--aurora-font-inter: "InterVariable", "Inter", system-ui, -apple-system, "Segoe UI",
+		Roboto, sans-serif;
+	--aurora-font-system: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text",
+		"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--aurora-font-rounded: ui-rounded, "SF Pro Rounded", "Segoe UI Variable Display",
+		"Nunito", "InterVariable", "Inter", system-ui, sans-serif;
+	--aurora-font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code",
+		"Cascadia Code", Menlo, Consolas, monospace;
+
+	/* the desk reads this one */
+	--font-stack: var(--aurora-font-system);
+
+	/* tightened heading scale — the stock one is very flat */
+	--aurora-tracking-tight: -0.018em;
+	--aurora-tracking-snug: -0.011em;
+	--aurora-tracking-wide: 0.04em;
+}
+
+/* The custom family is always the FIRST entry of a full fallback stack, never
+   the whole declaration — so a name that fails to resolve degrades to the
+   system face instead of leaving the desk in a default serif. */
+html[data-aurora-font="custom"] {
+	--font-stack: var(--aurora-font-custom, ""), var(--aurora-font-system);
+}
+
+html[data-aurora-font="inter"] { --font-stack: var(--aurora-font-inter); }
+html[data-aurora-font="system"] { --font-stack: var(--aurora-font-system); }
+html[data-aurora-font="rounded"] { --font-stack: var(--aurora-font-rounded); }
+
+body,
+input,
+select,
+textarea,
+button,
+.form-control,
+.btn,
+.dropdown-menu,
+.modal,
+.tooltip,
+.popover {
+	font-family: var(--font-stack);
+}
+
+/* -----------------------------------------------------------------------------
+   OpenType — only meaningful on Inter, harmless elsewhere.
+   cv11 gives a single-storey `a`… ss03 a rounder `g`, `zero` slashes the zero so
+   it can't be read as an O in an account code.
+   -------------------------------------------------------------------------- */
+body {
+	font-feature-settings: "cv05" 1, "cv11" 1, "ss03" 1, "calt" 1;
+	font-optical-sizing: auto;
+	letter-spacing: var(--aurora-tracking-snug);
+}
+
+/* -----------------------------------------------------------------------------
+   Numbers. Anything that sits in a column gets tabular, slashed-zero figures so
+   digits align and totals scan vertically — this is the single biggest
+   readability win in an ERP.
+   -------------------------------------------------------------------------- */
+.list-row-col,
+.dt-cell__content,
+.grid-static-col,
+.form-grid .data-row,
+.widget.number-widget-box .number,
+.frappe-control[data-fieldtype="Currency"] .control-value,
+.frappe-control[data-fieldtype="Float"] .control-value,
+.frappe-control[data-fieldtype="Int"] .control-value,
+.frappe-control[data-fieldtype="Percent"] .control-value,
+input[data-fieldtype="Currency"],
+input[data-fieldtype="Float"],
+input[data-fieldtype="Int"],
+input[data-fieldtype="Percent"],
+.report-wrapper,
+.total-row,
+td.text-right,
+.text-right {
+	font-variant-numeric: tabular-nums slashed-zero;
+	font-feature-settings: "tnum" 1, "zero" 1, "cv05" 1, "cv11" 1;
+}
+
+/* -----------------------------------------------------------------------------
+   Headings — bigger jumps between levels, tighter tracking as size grows.
+   -------------------------------------------------------------------------- */
+h1, .h1 { letter-spacing: var(--aurora-tracking-tight); font-weight: var(--weight-semibold); }
+h2, .h2 { letter-spacing: var(--aurora-tracking-tight); font-weight: var(--weight-semibold); }
+h3, .h3 { letter-spacing: var(--aurora-tracking-snug); font-weight: var(--weight-semibold); }
+h4, h5, h6 { letter-spacing: var(--aurora-tracking-snug); font-weight: var(--weight-semibold); }
+
+.page-title .title-text,
+.title-area .title-text {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-tight);
+}
+
+/* -----------------------------------------------------------------------------
+   Small caps labels — field labels, column headers, section heads. Uppercase
+   micro-type needs positive tracking or it turns to mush.
+   -------------------------------------------------------------------------- */
+.list-row-head .list-row-col,
+.grid-heading-row,
+.dt-row-header .dt-cell__content,
+.widget-group .widget-group-title,
+.sidebar-label {
+	letter-spacing: var(--aurora-tracking-wide);
+	font-weight: var(--weight-semibold);
+	text-transform: uppercase;
+	font-size: var(--text-tiny);
+}
+
+.control-label {
+	font-weight: var(--weight-medium);
+	letter-spacing: 0;
+	color: var(--text-muted);
+}
+
+/* code / JSON / SQL fields keep a real mono face */
+code, pre, kbd, samp,
+.ace_editor,
+.control-value.like-disabled-input pre,
+[data-fieldtype="Code"] .ace_editor,
+[data-fieldtype="JSON"] .ace_editor {
+	font-family: var(--aurora-font-mono);
+	font-feature-settings: "calt" 1, "zero" 1;
+	letter-spacing: 0;
+}

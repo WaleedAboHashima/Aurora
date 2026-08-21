@@ -1,0 +1,446 @@
+/* =============================================================================
+   Aurora — buttons, inputs, dropdowns
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Buttons
+   -----------------------------------------------------------------------------
+   Radius needs stating on every state. Bootstrap re-declares border-radius on
+   :hover/:focus/:active and squares off the inner edges of .btn-group children,
+   which is why hover was still showing the stock corner.
+   -------------------------------------------------------------------------- */
+.btn,
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn.active,
+.btn:disabled,
+.btn.focus {
+	border-radius: var(--border-radius);
+}
+
+.btn {
+	position: relative;
+	overflow: hidden; /* clips the ripple to the rounded box */
+	font-weight: var(--weight-medium);
+	letter-spacing: 0;
+	transition: transform var(--aurora-dur-1) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		background-color var(--aurora-dur-2) var(--aurora-ease),
+		color var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* button groups: round the outer edges, keep the seam flat */
+.btn-group > .btn,
+.btn-group > .btn:hover,
+.btn-group > .btn:focus,
+.btn-group > .btn:active {
+	border-radius: 0;
+}
+
+.btn-group > .btn:first-child,
+.btn-group > .btn:first-child:hover,
+.btn-group > .btn:first-child:focus {
+	border-top-left-radius: var(--border-radius);
+	border-bottom-left-radius: var(--border-radius);
+}
+
+.btn-group > .btn:last-child,
+.btn-group > .btn:last-child:hover,
+.btn-group > .btn:last-child:focus,
+.btn-group > .dropdown-toggle,
+.btn-group > .dropdown-toggle:hover {
+	border-top-right-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+}
+
+.btn-group > .btn:only-child,
+.btn-group > .btn:only-child:hover {
+	border-radius: var(--border-radius);
+}
+
+.btn:hover {
+	transform: translateY(-1px);
+}
+
+.btn:active {
+	transform: translateY(0) scale(0.975);
+	transition-duration: 60ms;
+	/* core sets these !important on :active — match the theme's shape */
+	border-radius: var(--border-radius) !important;
+}
+
+.btn:disabled,
+.btn.disabled {
+	transform: none !important;
+	filter: saturate(0.5);
+	opacity: 0.6;
+}
+
+/* --- primary ------------------------------------------------------------- */
+.btn.btn-primary,
+.btn-primary {
+	background: var(--aurora-gradient);
+	background-size: 160% 160%;
+	background-position: 0% 50%;
+	border: none;
+	color: #fff;
+	box-shadow: 0 1px 2px hsl(var(--aurora-shadow-color) / 0.16),
+		0 4px 12px -6px var(--aurora-glow);
+	transition: background-position var(--aurora-dur-4) var(--aurora-ease),
+		transform var(--aurora-dur-1) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.btn.btn-primary:hover,
+.btn-primary:hover {
+	background-position: 100% 50%;
+	color: #fff;
+	box-shadow: 0 2px 4px hsl(var(--aurora-shadow-color) / 0.18),
+		0 10px 22px -8px var(--aurora-glow);
+}
+
+.btn.btn-primary:active {
+	color: #fff !important;
+	background: var(--aurora-gradient) !important;
+	box-shadow: var(--focus-default) !important;
+}
+
+/* --- default / secondary ------------------------------------------------- */
+.btn.btn-default,
+.btn.btn-secondary {
+	background-color: var(--btn-default-bg);
+	border: 1px solid transparent;
+	color: var(--text-color);
+}
+
+.btn.btn-default:hover,
+.btn.btn-secondary:hover {
+	background-color: var(--btn-default-hover-bg);
+	border-color: var(--aurora-ring);
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .btn.btn-default:hover,
+[data-theme="dark"] .btn.btn-secondary:hover {
+	color: var(--aurora-300);
+}
+
+/* --- danger -------------------------------------------------------------- */
+.btn.btn-danger {
+	background: linear-gradient(135deg, var(--red-500), var(--red-700));
+	border: none;
+	color: #fff;
+}
+
+/* --- icon buttons -------------------------------------------------------- */
+.btn.icon-btn,
+.btn.icon-btn:hover,
+.btn.icon-btn:active {
+	border-radius: var(--border-radius-sm);
+}
+
+.btn .icon,
+.btn .es-icon {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.btn.icon-btn:hover .icon,
+.btn.icon-btn:hover .es-icon {
+	transform: scale(1.1);
+}
+
+/* --- ripple (js/theme/ripple.js) ----------------------------------------- */
+.aurora-ripple {
+	position: absolute;
+	border-radius: 50%;
+	transform: scale(0);
+	opacity: 0.45;
+	background: currentColor;
+	pointer-events: none;
+	animation: aurora-ripple 560ms var(--aurora-ease-out) forwards;
+	mix-blend-mode: multiply;
+}
+
+[data-theme="dark"] .aurora-ripple {
+	mix-blend-mode: screen;
+	opacity: 0.3;
+}
+
+.btn-primary .aurora-ripple {
+	background: #fff;
+	mix-blend-mode: overlay;
+}
+
+/* -----------------------------------------------------------------------------
+   Text inputs
+   -----------------------------------------------------------------------------
+   Core sets `.form-control { border: none }` and a fixed 28px height, so adding
+   a real border would shift every field by 2px. The outline is drawn with an
+   inset shadow instead: same look, zero layout impact.
+   -------------------------------------------------------------------------- */
+.form-control,
+.input-with-feedback:not([type="checkbox"]):not([type="radio"]),
+select.form-control,
+textarea.form-control,
+.like-disabled-input,
+.table-multiselect,
+.awesomplete input {
+	border: none;
+	border-radius: var(--border-radius-sm);
+	background-color: var(--control-bg);
+	box-shadow: inset 0 0 0 1px var(--border-color);
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.form-control:hover:not(:disabled):not([readonly]),
+.table-multiselect:hover {
+	box-shadow: inset 0 0 0 1px var(--aurora-300);
+}
+
+.form-control:focus,
+.awesomplete input:focus,
+textarea.form-control:focus,
+select.form-control:focus {
+	background-color: var(--fg-color);
+	box-shadow: inset 0 0 0 1px var(--aurora-400), var(--focus-default);
+	outline: none;
+}
+
+.form-control:disabled,
+.form-control[readonly],
+.like-disabled-input {
+	box-shadow: inset 0 0 0 1px transparent;
+	background-color: var(--disabled-control-bg);
+}
+
+/* NO custom chevron for selects. `ControlSelect.set_icon()` already appends a
+   `.select-icon` div holding core's own glyph, so a CSS chevron here rendered a
+   second arrow next to it — the double-arrow bug. Core's glyph is deliberately
+   a stacked up/down caret pair, which is easy to mistake for two icons, so if
+   this ever looks wrong again: check the count of `.select-icon` elements
+   before adding anything back here. */
+
+/* the label tints while its control has focus, so the eye can find the field */
+.frappe-control .control-label {
+	transition: color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.frappe-control:focus-within .control-label {
+	color: var(--aurora-600);
+}
+
+[data-theme="dark"] .frappe-control:focus-within .control-label {
+	color: var(--aurora-300);
+}
+
+/* --- checkbox ------------------------------------------------------------ */
+/* NOTE: `.input-with-feedback` is added by ControlData.make_input() to every
+   control, and ControlCheck only strips `form-control` — so checkboxes and
+   radios carry it too. They must be excluded from anything that sizes or skins
+   a text field, or they render as tall pills. */
+input[type="checkbox"],
+input[type="radio"] {
+	width: var(--checkbox-size);
+	height: var(--checkbox-size);
+	min-height: 0;
+	flex: none;
+	background-color: initial;
+	cursor: pointer;
+}
+
+input[type="radio"] {
+	border-radius: 999px !important;
+}
+
+input[type="checkbox"] {
+	border-radius: 5px !important;
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease),
+		border-color var(--aurora-dur-1) var(--aurora-ease),
+		box-shadow var(--aurora-dur-1) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+input[type="checkbox"]:hover {
+	border-color: var(--aurora-400);
+	box-shadow: 0 0 0 3px var(--aurora-softer);
+}
+
+input[type="checkbox"]:checked {
+	animation: aurora-check-pop var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+/* -----------------------------------------------------------------------------
+   Dropdown menus
+   -----------------------------------------------------------------------------
+   Two core rules fight any restyle here and both need answering:
+     desk/global.scss  .dropdown-menu a { transition: none }   → kills all motion
+     desk/global.scss  .dropdown-item   { padding: … !important } → blocks padding
+   So: transitions are re-enabled explicitly, and the hover nudge is a transform
+   rather than a padding change.
+   -------------------------------------------------------------------------- */
+:root {
+	--dropdown-padding: 7px 10px;
+}
+
+.dropdown-menu {
+	padding: 6px;
+	border-radius: var(--border-radius-md);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-lg);
+	background-color: var(--popover-bg);
+	-webkit-backdrop-filter: saturate(180%) blur(16px);
+	backdrop-filter: saturate(180%) blur(16px);
+	transform-origin: top center;
+	overflow: hidden auto;
+}
+
+/* Opens with a fade and nothing else.
+   Bootstrap positions this menu with an inline `transform: translate3d(...)`
+   from Popper, and a CSS animation outranks inline styles — so animating
+   `transform` here would throw the menu to the top-left of the page. The
+   movement lives on the items instead, which Popper does not touch. */
+.dropdown-menu.show,
+.dropdown.show > .dropdown-menu,
+.dropup.show > .dropdown-menu {
+	animation: aurora-fade-in var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.dropdown-menu.show > .dropdown-item,
+.dropdown-menu.show > li > .dropdown-item {
+	/* `backwards`, not `both`: `both` would pin `transform: none` after the
+	   animation and kill the hover nudge below. */
+	animation: aurora-menu-item-in var(--aurora-dur-2) var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 12ms);
+}
+
+@keyframes aurora-menu-item-in {
+	from { opacity: 0; transform: translateY(-4px); }
+	to { opacity: 1; transform: none; }
+}
+
+/* re-enable motion that core switched off */
+.dropdown-menu a,
+.dropdown-menu .dropdown-item {
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease),
+		color var(--aurora-dur-1) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.dropdown-menu .dropdown-item {
+	border-radius: var(--border-radius-sm);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-color);
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus,
+.dropdown-menu .dropdown-item.selected {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+	transform: translateX(3px);
+}
+
+[data-theme="dark"] .dropdown-menu .dropdown-item:hover,
+[data-theme="dark"] .dropdown-menu .dropdown-item:focus {
+	color: var(--aurora-200);
+}
+
+.dropdown-menu .dropdown-item:active,
+.dropdown-menu .dropdown-item.active {
+	background: var(--aurora-gradient-soft);
+	color: var(--aurora-700);
+}
+
+.dropdown-menu .dropdown-divider,
+.dropdown-menu .divider {
+	border-top-color: var(--border-color);
+	margin: 5px 2px;
+}
+
+/* keyboard-shortcut hints inside menus */
+.dropdown-menu .dropdown-item .shortcut,
+.dropdown-menu kbd {
+	margin-left: auto;
+	font-size: 10px;
+	padding: 2px 5px;
+	border-radius: 5px;
+	background: var(--control-bg);
+	color: var(--text-muted);
+	border: 1px solid var(--border-color);
+}
+
+/* menus that are really lists (list sidebar, multiselect) keep the same skin */
+.list-sidebar .dropdown-menu,
+.multiselect-list .dropdown-menu,
+.filter-selector .dropdown-menu {
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-lg);
+}
+
+/* -----------------------------------------------------------------------------
+   Awesomebar / global search
+   -------------------------------------------------------------------------- */
+.search-bar .awesomplete input {
+	border-radius: var(--border-radius-full);
+	transition: box-shadow var(--aurora-dur-3) var(--aurora-ease),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.search-bar .awesomplete input:focus {
+	box-shadow: inset 0 0 0 1px var(--aurora-400), var(--focus-default), var(--shadow-lg);
+	border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.search-bar .search-icon {
+	border-radius: var(--border-radius-full);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.search-bar:hover .search-icon {
+	background-color: var(--aurora-soft);
+	transform: scale(1.06);
+}
+
+.awesomplete > ul {
+	border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+	box-shadow: var(--shadow-lg);
+	border: 1px solid var(--border-color);
+	padding: 4px;
+}
+
+.awesomplete > ul > li {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.awesomplete > ul > li[aria-selected="true"],
+.awesomplete > ul > li:hover {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+}
+
+/* -----------------------------------------------------------------------------
+   Indicator pills
+   -------------------------------------------------------------------------- */
+.indicator-pill {
+	border-radius: var(--border-radius-full);
+	font-weight: var(--weight-medium);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		filter var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.indicator-pill:hover {
+	transform: translateY(-1px);
+}
+
+.indicator-pill.orange::before,
+.indicator-pill.blue::before,
+.indicator-pill.yellow::before {
+	animation: aurora-breathe 2.4s var(--aurora-ease) infinite;
+}

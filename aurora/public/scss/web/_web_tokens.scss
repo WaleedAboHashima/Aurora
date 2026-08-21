@@ -1,0 +1,57 @@
+/* =============================================================================
+   Aurora — tokens for the public site (login, portal)
+   -----------------------------------------------------------------------------
+   Deliberately NOT the desk token file. That one remaps frappe's own layout
+   variables (--bg-color, --fg-color, --control-bg …), which would restyle every
+   portal and web page on the site. Here we define only the Aurora palette, so
+   the login redesign can use it without touching anything else.
+   ========================================================================== */
+
+:root {
+	--aurora-h: 256;
+	--aurora-s: 84%;
+	--aurora-l: 60%;
+
+	--aurora-200: hsl(var(--aurora-h) var(--aurora-s) 88%);
+	--aurora-300: hsl(var(--aurora-h) var(--aurora-s) 80%);
+	--aurora-400: hsl(var(--aurora-h) var(--aurora-s) 70%);
+	--aurora-500: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l));
+	--aurora-600: hsl(var(--aurora-h) var(--aurora-s) calc(var(--aurora-l) - 8%));
+	--aurora-700: hsl(var(--aurora-h) var(--aurora-s) calc(var(--aurora-l) - 16%));
+
+	--aurora-alt-h: calc(var(--aurora-h) + 30);
+	--aurora-alt: hsl(var(--aurora-alt-h) 80% 62%);
+
+	--aurora-soft: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.12);
+	--aurora-softer: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.06);
+	--aurora-ring: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.22);
+	--aurora-glow: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.42);
+	--aurora-gradient: linear-gradient(135deg, var(--aurora-500) 0%, var(--aurora-alt) 100%);
+
+	--aurora-shadow-color: 232 20% 40%;
+
+	--aurora-ease: cubic-bezier(0.4, 0, 0.2, 1);
+	--aurora-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+	--aurora-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+	--aurora-login-surface: #ffffff;
+	--aurora-login-canvas: #f6f7fb;
+	--aurora-login-ink: hsl(var(--aurora-h) 16% 16%);
+	--aurora-login-muted: hsl(var(--aurora-h) 10% 46%);
+	--aurora-login-line: hsl(var(--aurora-h) 18% 90%);
+}
+
+/* flat mode carries over from the desk preference */
+html[data-aurora-gradients="0"] {
+	--aurora-gradient: linear-gradient(var(--aurora-500), var(--aurora-500));
+}
+
+[data-theme="dark"] {
+	--aurora-l: 66%;
+	--aurora-shadow-color: var(--aurora-h) 60% 3%;
+	--aurora-login-surface: hsl(var(--aurora-h) 18% 12%);
+	--aurora-login-canvas: hsl(var(--aurora-h) 22% 8%);
+	--aurora-login-ink: hsl(var(--aurora-h) 14% 92%);
+	--aurora-login-muted: hsl(var(--aurora-h) 10% 62%);
+	--aurora-login-line: hsl(var(--aurora-h) 14% 22%);
+}

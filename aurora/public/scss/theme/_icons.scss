@@ -1,0 +1,181 @@
+/* =============================================================================
+   Aurora — icons
+   -----------------------------------------------------------------------------
+   Frappe draws every icon as an <svg><use> against a sprite, coloured by two
+   variables: `--icon-stroke` for the outline set (.icon) and the same variable
+   used as *fill* for the solid espresso set (.es-icon). Because both read from
+   one custom property, re-colouring the icon system is a matter of scoping that
+   property — no per-icon overrides, and third-party app icons follow along.
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+	--icon-stroke: var(--aurora-ink-icon);
+	--icon-fill: transparent;
+	--icon-fill-bg: var(--fg-color);
+
+	/* neutral icon ink: slightly cooled toward the accent so icons sit in the
+	   same colour family as the rest of the UI instead of reading as pure grey */
+	--aurora-ink-icon: hsl(var(--aurora-h) 14% 34%);
+	--aurora-ink-icon-muted: hsl(var(--aurora-h) 12% 55%);
+}
+
+[data-theme="dark"] {
+	--aurora-ink-icon: hsl(var(--aurora-h) 12% 78%);
+	--aurora-ink-icon-muted: hsl(var(--aurora-h) 10% 58%);
+	--icon-stroke: var(--aurora-ink-icon);
+}
+
+/* Frappe ships TWO icon sets and they are drawn in opposite ways:
+
+     .icon      outline  — fill: transparent, stroke: var(--icon-stroke), 1.5px
+     .es-icon   solid    — fill: var(--icon-stroke), stroke-width: 0
+
+   So `stroke-width` must never be applied to both. Giving a solid icon a stroke
+   paints an outline *around its already-filled shape*, which is what made
+   refresh, filter and sort render noticeably heavier than everything near them.
+   Only the transition is shared. */
+.icon,
+.es-icon {
+	transition: stroke var(--aurora-dur-2) var(--aurora-ease),
+		fill var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.icon {
+	stroke-width: 1.5px;
+}
+
+.es-icon {
+	stroke-width: 0;
+	stroke: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Contextual colour — icons take the accent wherever their host is active or
+   hovered, and go muted wherever the host is secondary.
+   -------------------------------------------------------------------------- */
+.body-sidebar .standard-sidebar-item .item-anchor:hover,
+.body-sidebar .active-sidebar .item-anchor,
+.dropdown-item:hover,
+.dropdown-item:focus,
+.list-row-container:hover .list-row,
+.widget:hover .widget-head,
+.tree .tree-link.active,
+.tree .tree-link:hover,
+.form-sidebar .sidebar-menu-item:hover,
+.list-sidebar .list-link > a:hover,
+.btn:hover {
+	--icon-stroke: var(--aurora-600);
+}
+
+[data-theme="dark"] .body-sidebar .standard-sidebar-item .item-anchor:hover,
+[data-theme="dark"] .body-sidebar .active-sidebar .item-anchor,
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .btn:hover {
+	--icon-stroke: var(--aurora-300);
+}
+
+/* primary buttons and other filled surfaces need white-on-accent icons */
+.btn-primary,
+.btn-primary:hover,
+.aurora-dock-btn:hover,
+.aurora-dock-btn.is-open,
+.indicator-pill .icon {
+	--icon-stroke: currentColor;
+}
+
+/* outline icons take the colour on their stroke, solid icons on their fill —
+   never both, or the glyph doubles up */
+.btn .icon {
+	stroke: var(--icon-stroke);
+}
+
+.btn .es-icon {
+	fill: var(--icon-stroke);
+	stroke: none;
+}
+
+.btn-primary .icon {
+	stroke: currentColor;
+}
+
+.btn-primary .es-icon {
+	fill: currentColor;
+	stroke: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Muted contexts — secondary chrome should not compete with content.
+   -------------------------------------------------------------------------- */
+.text-muted .icon,
+.text-muted .es-icon,
+.list-row-col .icon,
+.comment-header .icon,
+.timeline-message-box .icon,
+.sidebar-item-suffix .icon,
+.grid-row .icon,
+.page-form .icon {
+	--icon-stroke: var(--aurora-ink-icon-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   Semantic icons keep their meaning — never tint these to the accent.
+   -------------------------------------------------------------------------- */
+.indicator-pill.red .icon, .icon.text-danger, .es-icon.text-danger { --icon-stroke: var(--red-600); }
+.indicator-pill.green .icon, .icon.text-success, .es-icon.text-success { --icon-stroke: var(--green-600); }
+.indicator-pill.orange .icon, .indicator-pill.yellow .icon { --icon-stroke: var(--orange-600); }
+.indicator-pill.blue .icon { --icon-stroke: var(--blue-600); }
+
+.like-icon.liked,
+.liked .like-icon {
+	--icon-stroke: var(--red-500);
+	fill: var(--red-500);
+	animation: aurora-check-pop var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+/* -----------------------------------------------------------------------------
+   Sidebar workspace icons — the coloured tiles get a soft accent-tinted plate
+   so a long sidebar reads as one set rather than a bag of stickers.
+   -------------------------------------------------------------------------- */
+.body-sidebar .sidebar-item-icon {
+	border-radius: var(--border-radius-sm);
+}
+
+/* Only the collapsed rail gets a plate behind the active icon — there the icon
+   IS the item, so it needs to carry the selected state on its own. In the
+   expanded rail the row already has its pill, and a second box behind the icon
+   just reads as an artefact. */
+.body-sidebar-container:not(.expanded) .active-sidebar .sidebar-item-icon {
+	background: var(--aurora-soft);
+}
+
+.body-sidebar-container.expanded .active-sidebar .sidebar-item-icon,
+.body-sidebar-container.expanded .standard-sidebar-item .sidebar-item-icon {
+	background: transparent;
+}
+
+/* -----------------------------------------------------------------------------
+   Motion — icons in interactive rows lift very slightly on hover. Kept to
+   transform only so it never triggers layout.
+   -------------------------------------------------------------------------- */
+.dropdown-item:hover .icon,
+.dropdown-item:hover .es-icon,
+.list-sidebar .list-link > a:hover .icon,
+.form-sidebar .sidebar-menu-item:hover .icon {
+	transform: scale(1.08);
+}
+
+/* avatars sit next to icons constantly — match their corner treatment */
+.avatar .avatar-frame,
+.avatar-frame {
+	border-radius: var(--border-radius-sm);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.avatar-group .avatar:hover .avatar-frame,
+.list-row-container:hover .avatar-frame {
+	transform: translateY(-1px) scale(1.06);
+	box-shadow: 0 4px 10px -4px hsl(var(--aurora-shadow-color) / 0.4);
+}

@@ -1,0 +1,218 @@
+/* =============================================================================
+   Aurora — form view
+   ========================================================================== */
+
+.form-section,
+.form-dashboard-section {
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* Sections are dividers inside the page card, not cards themselves — see the
+   note in _depth.scss. Core draws only a bottom hairline here and that is
+   right; the theme just tunes its colour. */
+.form-section.card-section,
+.form-dashboard-section {
+	border-bottom: 1px solid var(--border-color);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.std-form-layout > .form-layout > .form-page > .form-section.card-section:last-child {
+	border-bottom: none;
+}
+
+/* section headings get a small accent marker */
+.form-section .section-head {
+	position: relative;
+	border-radius: var(--border-radius-sm);
+	transition: color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.form-section .section-head.collapsed .collapse-indicator,
+.form-section .section-head .collapse-indicator {
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.form-section .section-head:not(.collapsed) .collapse-indicator {
+	transform: rotate(90deg);
+}
+
+/* collapsible bodies slide instead of snapping */
+.form-section .section-body {
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease);
+}
+
+/* --- tabs ----------------------------------------------------------------
+   Core gives a tab `padding: 10px 0` and spaces them with `margin: 0
+   var(--margin-md)` — so there is no horizontal padding at all, and any
+   background painted behind one clamps to the glyphs. Trading most of that
+   margin for padding keeps the spacing between tab *labels* about the same
+   while giving the tinted plate room to sit in. */
+.form-tabs-list .form-tabs .nav-item .nav-link,
+.nav-tabs .nav-link {
+	position: relative;
+	border: none !important;
+	border-radius: var(--border-radius-sm);
+	padding: 8px 12px;
+	margin: 0 3px;
+	transition: color var(--aurora-dur-2) var(--aurora-ease),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* the selected tab carries the tint, not just the underline */
+.form-tabs-list .form-tabs .nav-item .nav-link.active,
+.nav-tabs .nav-link.active {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .form-tabs-list .form-tabs .nav-item .nav-link.active {
+	color: var(--aurora-300);
+}
+
+.form-tabs-list .form-tabs .nav-link::after,
+.nav-tabs .nav-link::after {
+	content: "";
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	bottom: -1px;
+	height: 2px;
+	border-radius: 999px;
+	background: var(--aurora-gradient);
+	transform: scaleX(0);
+	transform-origin: center;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.form-tabs-list .form-tabs .nav-link.active::after,
+.nav-tabs .nav-link.active::after {
+	transform: scaleX(1);
+}
+
+.form-tabs-list .form-tabs .nav-link:hover,
+.nav-tabs .nav-link:hover {
+	background-color: var(--aurora-softer);
+	color: var(--aurora-700);
+}
+
+/* --- grid (child tables) ------------------------------------------------- */
+.grid-row {
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.grid-body .grid-row:hover:not(.grid-row-open) {
+	background-color: var(--aurora-softer);
+}
+
+.grid-row.grid-row-open {
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-base);
+	animation: aurora-rise-sm var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+}
+
+.grid-heading-row {
+	background-color: var(--subtle-accent);
+	border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+}
+
+.grid-add-row,
+.grid-remove-rows {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.grid-add-row:hover {
+	transform: translateX(2px);
+}
+
+/* --- form sidebar -------------------------------------------------------- */
+.form-sidebar .sidebar-label,
+.form-sidebar .sidebar-menu-item {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.form-sidebar .sidebar-menu-item:hover {
+	background-color: var(--aurora-soft);
+}
+
+/* --- dashboard / connections -------------------------------------------- */
+.form-dashboard-section .document-link .badge-link,
+.form-links .document-link {
+	border-radius: var(--border-radius-md);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.form-links .document-link:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--aurora-lift);
+	border-color: var(--aurora-ring);
+}
+
+/* progress / heatmap inside the dashboard */
+.progress-chart .progress,
+.progress {
+	border-radius: 999px;
+	overflow: hidden;
+	background-color: var(--control-bg);
+}
+
+.progress .progress-bar {
+	background: var(--aurora-gradient);
+	transition: width var(--aurora-dur-4) var(--aurora-ease-out);
+}
+
+/* --- timeline ------------------------------------------------------------ */
+.new-timeline .timeline-item {
+	animation: aurora-rise-sm var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 30ms);
+}
+
+.new-timeline .timeline-badge {
+	border-radius: 999px;
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.new-timeline .timeline-item:hover .timeline-badge {
+	transform: scale(1.12);
+	box-shadow: 0 0 0 4px var(--aurora-soft);
+}
+
+.new-timeline .timeline-content {
+	border-radius: var(--border-radius-md);
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.new-timeline .timeline-content:hover {
+	box-shadow: var(--shadow-base);
+	border-color: var(--aurora-ring);
+}
+
+/* --- comment box --------------------------------------------------------- */
+.comment-box {
+	border-radius: var(--border-radius-md);
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.comment-box:focus-within {
+	border-color: var(--aurora-400);
+	box-shadow: var(--focus-default);
+}
+
+/* --- save feedback ------------------------------------------------------- */
+/* js/theme/form_feedback.js pulses the page indicator when a doc is saved */
+.page-indicator-pill.aurora-saved {
+	animation: aurora-pulse-ring 900ms var(--aurora-ease) 1;
+}
+
+/* --- docstatus / dirty state -------------------------------------------- */
+.title-area .indicator-pill {
+	transition: background-color var(--aurora-dur-3) var(--aurora-ease),
+		color var(--aurora-dur-3) var(--aurora-ease);
+}

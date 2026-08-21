@@ -1,0 +1,203 @@
+/* =============================================================================
+   Aurora — canvas, typography, scrollbars, global affordances
+   ========================================================================== */
+
+/* The canvas colour lives on <html> so <body> can stay transparent: that lets
+   the fixed ambient backdrop sit at z-index -1 without needing z-index bumps —
+   and the position overrides that come with them — on modals or overlays. */
+html {
+	scroll-behavior: smooth;
+	background-color: var(--bg-color);
+}
+
+body {
+	background-color: transparent;
+	color: var(--text-color);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+/* -----------------------------------------------------------------------------
+   Ambient colour
+   -----------------------------------------------------------------------------
+   Third design of this. What the previous two got wrong, in order:
+
+     1. two localised blobs — visible only in the gaps between opaque cards, so
+        wherever a card ended you got a hard patch of colour, not an ambience;
+     2. a full-viewport gradient on a fixed z-index:-1 element — better, but a
+        fixed element still sits *behind body content and in front of the
+        canvas*, so any opaque container produced a visible seam where it ended.
+        The launcher, which is mostly empty, showed that seam plainly.
+
+   The wash now lives on the ROOT ELEMENT's background. The root's background is
+   propagated to the canvas and painted behind absolutely everything, so it
+   cannot be seamed by an opaque container — there is nothing for it to be
+   occluded *by*. It also costs no element, no compositing layer and no
+   animation frame.
+
+   `.aurora-backdrop-over` remains a real element because it has to blend with
+   the painted UI above it, which only a stacked element can do. It is mounted
+   only at the "vivid" setting.
+   -------------------------------------------------------------------------- */
+html[data-aurora-ambient="subtle"],
+html[data-aurora-ambient="vivid"] {
+	background-image:
+		radial-gradient(
+			120vmax 90vmax at 6% -12%,
+			hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.07),
+			transparent 62%
+		),
+		radial-gradient(
+			105vmax 85vmax at 100% 112%,
+			hsl(var(--aurora-alt-h) 70% 60% / 0.055),
+			transparent 60%
+		);
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+}
+
+[data-theme="dark"][data-aurora-ambient="subtle"],
+[data-theme="dark"][data-aurora-ambient="vivid"] {
+	background-image:
+		radial-gradient(
+			120vmax 90vmax at 6% -12%,
+			hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.1),
+			transparent 60%
+		),
+		radial-gradient(
+			105vmax 85vmax at 100% 112%,
+			hsl(var(--aurora-alt-h) 60% 50% / 0.075),
+			transparent 58%
+		);
+}
+
+/* --- the over-layer, "vivid" only ---------------------------------------- */
+.aurora-backdrop-over {
+	position: fixed;
+	inset: 0;
+	/* above every app layer: modals ~1050, freeze ~1040, the theme dock 1030 */
+	z-index: 2147483000;
+	pointer-events: none;
+	contain: strict;
+	mix-blend-mode: multiply;
+	opacity: 0.5;
+	background:
+		radial-gradient(
+			120vmax 90vmax at 6% -12%,
+			hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.08),
+			transparent 62%
+		),
+		radial-gradient(
+			105vmax 85vmax at 100% 112%,
+			hsl(var(--aurora-alt-h) 70% 60% / 0.06),
+			transparent 60%
+		);
+}
+
+/* multiply darkens; on a dark UI it would only muddy, so invert the blend */
+[data-theme="dark"] .aurora-backdrop-over {
+	mix-blend-mode: screen;
+	opacity: 0.28;
+}
+
+/* -----------------------------------------------------------------------------
+   Typography
+   -------------------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6,
+.page-title .title-text,
+.widget-title {
+	letter-spacing: -0.012em;
+	color: var(--heading-color);
+}
+
+a {
+	transition: color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+a:not(.btn):not(.item-anchor):hover {
+	color: var(--aurora-600);
+}
+
+::selection {
+	background: var(--aurora-soft);
+	color: var(--heading-color);
+}
+
+/* -----------------------------------------------------------------------------
+   Scrollbars — thin, themed, and only fully visible while the area is hovered.
+   -------------------------------------------------------------------------- */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--scrollbar-thumb-color) transparent;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var(--scrollbar-thumb-color);
+	border: 3px solid transparent;
+	background-clip: content-box;
+	border-radius: 999px;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: var(--aurora-400);
+}
+
+/* -----------------------------------------------------------------------------
+   Focus — one consistent, animated ring across every focusable surface.
+   -------------------------------------------------------------------------- */
+:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-default);
+	border-radius: var(--border-radius-sm);
+	transition: box-shadow var(--aurora-dur-1) var(--aurora-ease);
+}
+
+/* -----------------------------------------------------------------------------
+   Cards / panels — the shared "sheet" look used across desk surfaces.
+   -------------------------------------------------------------------------- */
+.frappe-card,
+.layout-main-section.frappe-card,
+.widget,
+.dashboard-section,
+.new-timeline .timeline-items .timeline-content {
+	border-radius: var(--border-radius-lg);
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out),
+		border-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.frappe-card {
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-sm);
+	background-color: var(--card-bg);
+}
+
+/* -----------------------------------------------------------------------------
+   Utility surfaces reused by the theme's own components.
+   -------------------------------------------------------------------------- */
+.aurora-glass {
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(18px);
+	backdrop-filter: saturate(180%) blur(18px);
+	border: 1px solid var(--aurora-glass-border);
+}
+
+.aurora-gradient-text {
+	background: var(--aurora-gradient);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+

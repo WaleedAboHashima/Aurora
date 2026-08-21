@@ -1,0 +1,198 @@
+/* =============================================================================
+   Aurora — workspaces and dashboard widgets
+   ========================================================================== */
+
+.layout-main-section .widget-group {
+	margin-bottom: calc(var(--margin-2xl) * var(--aurora-density));
+}
+
+.widget-group .widget-group-title {
+	position: relative;
+	padding-left: 12px;
+}
+
+.widget-group .widget-group-title::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 4px;
+	height: 1em;
+	border-radius: 999px;
+	background: var(--aurora-gradient);
+}
+
+/* -----------------------------------------------------------------------------
+   Widget card — one shared elevated surface with a hover lift and a light
+   sheen that tracks the pointer (js/theme/tilt.js writes --aurora-mx/--aurora-my).
+   -------------------------------------------------------------------------- */
+.widget {
+	position: relative;
+	background-color: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-xs);
+	overflow: hidden;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-3) var(--aurora-ease),
+		border-color var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.widget::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0;
+	background: radial-gradient(
+		380px circle at var(--aurora-mx, 50%) var(--aurora-my, 0%),
+		var(--aurora-soft),
+		transparent 62%
+	);
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.widget:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--aurora-lift);
+	border-color: var(--aurora-ring);
+}
+
+.widget:hover::after {
+	opacity: 1;
+}
+
+.widget.widget-shadow:hover {
+	box-shadow: var(--aurora-lift);
+}
+
+/* --- shortcuts ----------------------------------------------------------- */
+.widget.shortcut-widget-box .widget-head .widget-title {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget.shortcut-widget-box:hover .widget-head .widget-title {
+	transform: translateX(3px);
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .widget.shortcut-widget-box:hover .widget-head .widget-title {
+	color: var(--aurora-300);
+}
+
+.widget.shortcut-widget-box .indicator-pill {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.widget.shortcut-widget-box:hover .indicator-pill {
+	transform: scale(1.06);
+}
+
+/* --- link lists ---------------------------------------------------------- */
+.widget.links-widget-box .link-item {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		padding-left var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget.links-widget-box .link-item:hover {
+	background-color: var(--aurora-soft);
+	padding-left: 12px;
+	color: var(--aurora-700);
+	text-decoration: none;
+}
+
+[data-theme="dark"] .widget.links-widget-box .link-item:hover {
+	color: var(--aurora-300);
+}
+
+/* --- number cards -------------------------------------------------------- */
+.widget.number-widget-box .widget-body .number {
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.02em;
+	transition: color var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.widget.number-widget-box .widget-body .number.aurora-counting {
+	color: var(--aurora-600);
+}
+
+.widget.number-widget-box .percentage-stat-area .indicator-pill {
+	animation: aurora-pop var(--aurora-dur-3) var(--aurora-ease-spring) backwards;
+	animation-delay: 180ms;
+}
+
+.widget.number-widget-box::before {
+	/* a soft accent halo behind the figure */
+	content: "";
+	position: absolute;
+	right: -30px;
+	top: -40px;
+	width: 140px;
+	height: 140px;
+	border-radius: 50%;
+	background: var(--aurora-gradient-soft);
+	filter: blur(20px);
+	opacity: 0;
+	transition: opacity var(--aurora-dur-4) var(--aurora-ease);
+	pointer-events: none;
+}
+
+.widget.number-widget-box:hover::before {
+	opacity: 1;
+}
+
+/* --- charts -------------------------------------------------------------- */
+.widget.chart-widget-box .chart-container,
+.widget.dashboard-widget-box {
+	border-radius: var(--border-radius-lg);
+}
+
+.frappe-chart .dataset-path,
+.frappe-chart .line-graph-path {
+	transition: stroke-width var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* --- onboarding ---------------------------------------------------------- */
+.widget.onboarding-widget-box {
+	background: var(--aurora-gradient-soft);
+	border-color: var(--aurora-ring);
+}
+
+.widget.onboarding-widget-box .onboarding-step {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.widget.onboarding-widget-box .onboarding-step:hover {
+	transform: translateX(3px);
+}
+
+/* --- staggered entrance for the whole board ------------------------------ */
+.widget-group .widget.aurora-reveal.aurora-revealed,
+.widget-group > .widget-body > .widget.aurora-reveal.aurora-revealed {
+	animation: aurora-widget-in var(--aurora-dur-4) var(--aurora-ease-spring) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * var(--aurora-stagger));
+}
+
+@keyframes aurora-widget-in {
+	from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.98); }
+	to { opacity: 1; transform: none; }
+}
+
+/* --- drag & drop while editing a workspace ------------------------------- */
+.widget.sortable-ghost {
+	opacity: 0.35;
+	transform: scale(0.98);
+}
+
+.widget .drag-handle {
+	opacity: 0;
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget:hover .drag-handle {
+	opacity: 1;
+}

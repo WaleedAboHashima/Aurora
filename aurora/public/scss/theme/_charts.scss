@@ -1,0 +1,455 @@
+/* =============================================================================
+   Aurora — charts
+   -----------------------------------------------------------------------------
+   The series colours are set in JS (js/theme/charts.js) because frappe-charts
+   paints them as SVG attributes, not CSS. What CSS *can* own is everything
+   around the data: axes, gridlines, labels, legend and tooltip — the parts that
+   make a chart look like it belongs to the product rather than to a library.
+
+   Every rule is gated on `html[data-aurora-charts="1"]`, so the off switch is
+   simply the absence of the flag — nothing to undo.
+   ========================================================================== */
+
+.chart-container {
+	color: var(--text-color);
+	font-family: var(--font-stack);
+}
+
+/* -----------------------------------------------------------------------------
+   Axes and gridlines — recede, so the data reads first
+   -------------------------------------------------------------------------- */
+.chart-container .axis line,
+.chart-container .chart-label line,
+.chart-container line.axis-line,
+.chart-container .y-axis-guide,
+.chart-container .axis-mixed line {
+	stroke: var(--border-color);
+	stroke-opacity: 0.8;
+}
+
+.chart-container .axis text,
+.chart-container .chart-label,
+.chart-container .axis-mixed text {
+	fill: var(--text-muted);
+	font-size: var(--text-tiny);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0;
+}
+
+/* the zero line matters — give it a touch more presence than the rest */
+.chart-container .y-axis-guide:first-of-type line {
+	stroke: var(--dark-border-color);
+}
+
+/* -----------------------------------------------------------------------------
+   Series marks
+   -------------------------------------------------------------------------- */
+.chart-container .dataset-path {
+	stroke-width: 2.25px;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	transition: stroke-width var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.chart-container:hover .dataset-path {
+	stroke-width: 2.75px;
+}
+
+/* dots stay hidden until they matter */
+.chart-container .data-point circle,
+.chart-container circle.data-point {
+	transition: r var(--aurora-dur-2) var(--aurora-ease-spring),
+		fill-opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* bars pick up the theme's corner language */
+.chart-container .bar,
+.chart-container rect.bar {
+	rx: 3;
+	ry: 3;
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.chart-container:hover .bar:not(:hover) {
+	opacity: 0.82;
+}
+
+.chart-container .bar:hover {
+	opacity: 1;
+}
+
+/* the vertical hover guide */
+.chart-container .chart-container-hover,
+.chart-container line.data-point-hover {
+	stroke: var(--aurora-400);
+	stroke-dasharray: 3 3;
+}
+
+/* -----------------------------------------------------------------------------
+   Tooltip — frappe-charts renders its own floating div, unstyled by frappe
+   -------------------------------------------------------------------------- */
+.graph-svg-tip {
+	background: var(--aurora-surface) !important;
+	color: var(--text-color) !important;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-md) !important;
+	box-shadow: var(--shadow-lg);
+	padding: 8px 10px !important;
+	font-family: var(--font-stack);
+	font-size: var(--text-xs);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+}
+
+.graph-svg-tip .title {
+	color: var(--text-muted) !important;
+	font-weight: var(--weight-medium);
+	letter-spacing: var(--aurora-tracking-wide);
+	text-transform: uppercase;
+	font-size: var(--text-tiny);
+	margin-bottom: 3px;
+}
+
+.graph-svg-tip ul,
+.graph-svg-tip li {
+	font-variant-numeric: tabular-nums;
+	color: var(--text-color) !important;
+}
+
+.graph-svg-tip .svg-pointer {
+	fill: var(--aurora-surface) !important;
+	stroke: var(--border-color);
+}
+
+/* the library ships a dark-only arrow for the "comparison" variant */
+.graph-svg-tip.comparison {
+	background: var(--aurora-surface) !important;
+}
+
+.graph-svg-tip.comparison .title {
+	color: var(--text-muted) !important;
+}
+
+/* -----------------------------------------------------------------------------
+   Legend
+   -------------------------------------------------------------------------- */
+.chart-legend,
+.chart-container .chart-legend {
+	font-size: var(--text-xs);
+}
+
+.legend-dataset-label {
+	fill: var(--text-muted);
+	font-size: var(--text-xs);
+}
+
+.legend-dataset-value {
+	fill: var(--text-color);
+	font-variant-numeric: tabular-nums;
+	font-weight: var(--weight-medium);
+}
+
+.legend-dot {
+	transition: r var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+/* frappe's own legend markup, used beside dashboard charts */
+.widget .chart-legend .legend-item,
+.legend .legend-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+	border-radius: var(--border-radius-full);
+	padding: 2px 8px;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.widget .chart-legend .legend-item:hover,
+.legend .legend-item:hover {
+	background-color: var(--aurora-soft);
+	color: var(--text-color);
+}
+
+.legend-colors li {
+	border-radius: 999px;
+}
+
+/* -----------------------------------------------------------------------------
+   Heatmap — the sequential ramp is generated in JS; this is the frame
+   -------------------------------------------------------------------------- */
+.heatmap-legend-unit,
+.chart-container .heatmap .day {
+	rx: 2;
+	ry: 2;
+}
+
+.chart-container .domain-name {
+	fill: var(--text-muted);
+	font-size: var(--text-tiny);
+}
+
+/* -----------------------------------------------------------------------------
+   Percentage / donut charts
+   -------------------------------------------------------------------------- */
+.chart-container .progress-bar,
+.chart-container .percentage-bar {
+	rx: 4;
+	ry: 4;
+}
+
+.chart-container .pie-path,
+.chart-container .donut-path {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		opacity var(--aurora-dur-2) var(--aurora-ease);
+	transform-origin: center;
+}
+
+.chart-container .pie-path:hover,
+.chart-container .donut-path:hover {
+	opacity: 0.9;
+}
+
+/* -----------------------------------------------------------------------------
+   Entrance — the chart card fades its plot in once, so a dashboard doesn't
+   flash a wall of half-drawn SVG.
+   -------------------------------------------------------------------------- */
+.widget.chart-widget-box .chart-container,
+.dashboard-section .chart-container {
+	animation: aurora-fade-in var(--aurora-dur-4) var(--aurora-ease-out);
+}
+
+
+
+
+
+/* =============================================================================
+   Aurora — charts, the animated pass
+   -----------------------------------------------------------------------------
+   Scoped to `html[data-aurora-charts="1"] .chart-container`, a class js/theme/charts.js stamps on the container
+   of every chart it actually themed. That matters: these are entrance
+   animations, and running them on a chart the theme does not own — or re-running
+   them every time frappe re-renders a widget — would look broken rather than
+   lively. One class, set once at construction, is the whole gate.
+
+   Everything here animates `transform`, `opacity` or `stroke-dashoffset`, all of
+   which composite without laying out. `fill`/`stroke` are left to the JS
+   palette, so nothing below can fight it.
+   ========================================================================== */
+
+/* --- lines -----------------------------------------------------------------
+   NO stroke-dasharray draw-in here. The obvious way to write one is to
+   normalise the path with `pathLength: 1` so a single dash value fits any
+   chart — but `pathLength` is an SVG *attribute*, not a CSS property, so CSS
+   cannot set it. Declaring it here does nothing, which leaves
+   `stroke-dasharray: 1` applied to a path hundreds of units long: the line
+   renders as a dotted crumb instead of a line.
+
+   frappe-charts already animates its own path on render, so the draw-in was
+   never ours to add. What CSS should own is how the line *looks*. */
+html[data-aurora-charts="1"] .chart-container .path-group path:not(.dataset-path) {
+	/* the tinted region under a spline */
+	animation: aurora-chart-region 900ms var(--aurora-ease) backwards;
+}
+
+/* a faint glow picks the series out against the gridlines */
+html[data-aurora-charts="1"] .chart-container:hover .dataset-path {
+	filter: drop-shadow(0 3px 8px var(--aurora-glow));
+}
+
+/* --- bars grow up, in sequence -------------------------------------------- */
+/* a fade, not a scale: frappe-charts animates bar height itself, and stacking a
+   scaleY on top of that made the bar grow twice from two different origins */
+html[data-aurora-charts="1"] .chart-container .bar,
+html[data-aurora-charts="1"] .chart-container rect.bar {
+	animation: aurora-chart-bar 520ms var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 45ms);
+}
+
+/* lift the hovered bar instead of only dimming its neighbours */
+html[data-aurora-charts="1"] .chart-container .bar:hover,
+html[data-aurora-charts="1"] .chart-container rect.bar:hover {
+	transform: translateY(-2px);
+}
+
+/* --- dots pop in behind the line ------------------------------------------ */
+html[data-aurora-charts="1"] .chart-container .data-point circle,
+html[data-aurora-charts="1"] .chart-container circle.data-point {
+	animation: aurora-chart-dot 480ms var(--aurora-ease-spring) 620ms backwards;
+}
+
+html[data-aurora-charts="1"] .chart-container .data-point circle:hover,
+html[data-aurora-charts="1"] .chart-container circle.data-point:hover {
+	r: 6;
+	filter: drop-shadow(0 2px 6px var(--aurora-glow));
+}
+
+/* --- donut / pie slices sweep out ----------------------------------------- */
+html[data-aurora-charts="1"] .chart-container .pie-path,
+html[data-aurora-charts="1"] .chart-container path.pie-path {
+	transform-origin: center;
+	animation: aurora-chart-slice 720ms var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 60ms);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+html[data-aurora-charts="1"] .chart-container .pie-path:hover,
+html[data-aurora-charts="1"] .chart-container path.pie-path:hover {
+	transform: scale(1.035);
+}
+
+/* --- percentage bars fill from the left ----------------------------------- */
+html[data-aurora-charts="1"] .chart-container .progress-bar,
+html[data-aurora-charts="1"] .chart-container .percentage-bar {
+	transform-origin: left center;
+	animation: aurora-chart-fill 780ms var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 70ms);
+}
+
+/* --- heatmap cells settle in --------------------------------------------- */
+html[data-aurora-charts="1"] .chart-container .heatmap .day {
+	animation: aurora-chart-cell 420ms var(--aurora-ease) backwards;
+	transition: transform var(--aurora-dur-1) var(--aurora-ease-spring);
+}
+
+html[data-aurora-charts="1"] .chart-container .heatmap .day:hover {
+	transform: scale(1.35);
+}
+
+/* --- legend chips --------------------------------------------------------- */
+html[data-aurora-charts="1"] .chart-container + .chart-legend .legend-item,
+html[data-aurora-charts="1"] .chart-container .chart-legend .legend-item {
+	animation: aurora-chart-legend 420ms var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 50ms + 500ms);
+}
+
+/* -----------------------------------------------------------------------------
+   Keyframes
+   -------------------------------------------------------------------------- */
+@keyframes aurora-chart-region {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes aurora-chart-bar {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes aurora-chart-dot {
+	from { opacity: 0; transform: scale(0.2); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-chart-slice {
+	from { opacity: 0; transform: scale(0.82) rotate(-8deg); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-chart-fill {
+	from { transform: scaleX(0); }
+	to { transform: none; }
+}
+
+@keyframes aurora-chart-cell {
+	from { opacity: 0; transform: scale(0.4); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-chart-legend {
+	from { opacity: 0; transform: translateY(4px); }
+	to { opacity: 1; transform: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   Reduced motion, and the dock's off switch — the marks must still be *there*,
+   just not animated. Every rule above starts from a hidden or clipped state, so
+   these have to reset the end state explicitly, not merely drop the animation.
+   -------------------------------------------------------------------------- */
+html[data-aurora-motion="off"] .chart-container *,
+html[data-aurora-charts="0"] .chart-container * {
+	animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.chart-container * {
+		animation: none !important;
+	}
+}
+
+/* =============================================================================
+   Aurora — charts, the look
+   -----------------------------------------------------------------------------
+   Separated from the motion above on purpose. frappe-charts animates its own
+   marks on render, so entrance motion is mostly not ours to add — but the
+   *appearance* of a chart is entirely CSS's to own, and it is what actually
+   reads as modern. Nothing here declares `fill` or `stroke` on a data mark, so
+   the JS palette stays the single source of series colour.
+   ========================================================================== */
+
+/* the plot sits on its own subtle plate, so a chart reads as an object rather
+   than ink floating on the page */
+html[data-aurora-charts="1"] .chart-container {
+	border-radius: var(--border-radius-md);
+}
+
+/* --- lines: heavier, rounder, and lifted off the gridlines --------------- */
+html[data-aurora-charts="1"] .chart-container .dataset-path {
+	stroke-width: 2.75px;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	filter: drop-shadow(0 4px 10px hsl(var(--aurora-h) var(--aurora-s) 50% / 0.28));
+}
+
+/* the region under a spline should read as a tint of the line, not a slab */
+html[data-aurora-charts="1"] .chart-container .path-group path:not(.dataset-path) {
+	opacity: 0.14;
+}
+
+html[data-aurora-charts="1"] .chart-container:hover .path-group path:not(.dataset-path) {
+	opacity: 0.2;
+}
+
+/* --- bars: the theme's corner language, at a size that suits a bar ------- */
+html[data-aurora-charts="1"] .chart-container .bar,
+html[data-aurora-charts="1"] .chart-container rect.bar {
+	rx: 5;
+	ry: 5;
+}
+
+/* --- dots ---------------------------------------------------------------- */
+html[data-aurora-charts="1"] .chart-container .data-point circle,
+html[data-aurora-charts="1"] .chart-container circle.data-point {
+	stroke: var(--card-bg);
+	stroke-width: 2px;
+}
+
+/* --- gridlines recede further than core's, so the data carries the eye --- */
+html[data-aurora-charts="1"] .chart-container .y-axis-guide line,
+html[data-aurora-charts="1"] .chart-container .axis line {
+	stroke-opacity: 0.45;
+	stroke-dasharray: 2 4;
+}
+
+/* except the baseline, which is structure rather than reference */
+html[data-aurora-charts="1"] .chart-container .y-axis-guide:first-of-type line {
+	stroke-dasharray: none;
+	stroke-opacity: 0.9;
+}
+
+/* --- axis labels --------------------------------------------------------- */
+html[data-aurora-charts="1"] .chart-container .axis text,
+html[data-aurora-charts="1"] .chart-container .chart-label {
+	font-weight: var(--weight-medium);
+	letter-spacing: var(--aurora-tracking-snug);
+}
+
+/* --- the hover guide ----------------------------------------------------- */
+html[data-aurora-charts="1"] .chart-container line.data-point-hover {
+	stroke-width: 1.5px;
+	stroke-opacity: 0.7;
+}
+
+
+

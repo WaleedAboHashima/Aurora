@@ -1,0 +1,579 @@
+/* =============================================================================
+   Aurora — Quick Look
+   -----------------------------------------------------------------------------
+   Two surfaces: a small `peek` that follows the pointer, and a `panel` that
+   docks to the right of the screen when the user presses Space.
+
+   The peek must never eat a click meant for the page underneath it while it is
+   fading, hence `pointer-events` toggling with `.open`.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Peek
+   -------------------------------------------------------------------------- */
+.aurora-ql-peek {
+	position: fixed;
+	z-index: 1031;
+	max-width: 340px;
+	min-width: 200px;
+	padding: 10px;
+	border-radius: var(--border-radius-lg);
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(18px);
+	backdrop-filter: saturate(180%) blur(18px);
+	border: 1px solid var(--aurora-glass-border);
+	box-shadow: var(--shadow-2xl);
+	color: var(--text-color);
+	font-size: var(--text-xs);
+
+	opacity: 0;
+	transform: translateY(6px) scale(0.97);
+	pointer-events: none;
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.aurora-ql-peek.open {
+	opacity: 1;
+	transform: none;
+	pointer-events: auto;
+	cursor: pointer;
+}
+
+.aurora-ql-thumb {
+	display: block;
+	max-width: 320px;
+	max-height: 260px;
+	width: auto;
+	height: auto;
+	border-radius: var(--border-radius-md);
+	background: var(--control-bg);
+}
+
+/* --- file card ------------------------------------------------------------ */
+.aurora-ql-file {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.aurora-ql-file-ext {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 46px;
+	border-radius: 7px;
+	background: var(--aurora-gradient);
+	color: #fff;
+	font-size: 10px;
+	font-weight: var(--weight-bold);
+	letter-spacing: 0.04em;
+}
+
+.aurora-ql-file-ext.big {
+	width: 76px;
+	height: 88px;
+	font-size: var(--text-base);
+	border-radius: 12px;
+}
+
+.aurora-ql-file-name {
+	font-weight: var(--weight-medium);
+	color: var(--heading-color);
+	word-break: break-word;
+	line-height: 1.35;
+}
+
+/* --- document card -------------------------------------------------------- */
+.aurora-ql-doc-head {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.aurora-ql-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: var(--border-radius-sm);
+	object-fit: cover;
+	flex: none;
+}
+
+.aurora-ql-dt {
+	display: block;
+	font-size: var(--text-tiny);
+	text-transform: uppercase;
+	letter-spacing: var(--aurora-tracking-wide);
+	color: var(--text-muted);
+	font-weight: var(--weight-semibold);
+}
+
+.aurora-ql-name {
+	display: block;
+	font-size: var(--text-sm);
+	font-weight: var(--weight-semibold);
+	color: var(--heading-color);
+	letter-spacing: var(--aurora-tracking-snug);
+}
+
+.aurora-ql-status {
+	margin-left: auto;
+	flex: none;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--aurora-soft);
+	color: var(--aurora-700);
+	font-size: 10px;
+	font-weight: var(--weight-medium);
+}
+
+[data-theme="dark"] .aurora-ql-status { color: var(--aurora-300); }
+
+.aurora-ql-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 8px;
+}
+
+.aurora-ql-row {
+	display: flex;
+	gap: 12px;
+	justify-content: space-between;
+	align-items: baseline;
+}
+
+.aurora-ql-row span {
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+.aurora-ql-row b {
+	font-weight: var(--weight-medium);
+	color: var(--text-color);
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 190px;
+}
+
+.aurora-ql-empty {
+	color: var(--text-muted);
+	padding: 6px 2px;
+}
+
+/* --- skeleton ------------------------------------------------------------- */
+.aurora-ql-skeleton {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding-top: 9px;
+}
+
+.aurora-ql-skeleton i {
+	height: 9px;
+	border-radius: 999px;
+	background: var(--control-bg);
+	background-image: linear-gradient(
+		90deg,
+		var(--control-bg) 0%,
+		var(--aurora-soft) 50%,
+		var(--control-bg) 100%
+	);
+	background-size: 220% 100%;
+	animation: aurora-shimmer 1.4s linear infinite;
+}
+
+.aurora-ql-skeleton i:nth-child(1) { width: 88%; }
+.aurora-ql-skeleton i:nth-child(2) { width: 66%; }
+.aurora-ql-skeleton i:nth-child(3) { width: 78%; }
+
+/* --- the Space hint ------------------------------------------------------- */
+.aurora-ql-hint {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 9px;
+	padding-top: 8px;
+	border-top: 1px solid var(--border-color);
+	color: var(--text-muted);
+	font-size: 10px;
+}
+
+.aurora-ql-hint kbd {
+	padding: 2px 6px;
+	border-radius: 5px;
+	background: var(--control-bg);
+	border: 1px solid var(--border-color);
+	font-family: inherit;
+	font-size: 9px;
+	font-weight: var(--weight-semibold);
+	color: var(--text-color);
+}
+
+/* -----------------------------------------------------------------------------
+   Panel
+   -------------------------------------------------------------------------- */
+.aurora-ql-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 1032;
+	background: var(--aurora-scrim);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.aurora-ql-backdrop.open {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* One surface for everything.
+   There used to be two — a right-hand drawer for documents and a centred modal
+   for files — on the theory that a document is "worked on beside" the record you
+   came from. In practice a desk form is not a narrow thing: it carries a field
+   grid, a tab bar and its own sidebar of attachments and assignments, and 52vw
+   squeezed all of that into a column. The drawer is gone; everything opens
+   centred and large. */
+.aurora-ql-panel {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 1033;
+	width: min(1280px, 94vw);
+	height: min(900px, 92vh);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: var(--modal-bg);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-xl);
+	box-shadow: 0 32px 80px -24px hsl(var(--aurora-shadow-color) / 0.45);
+
+	/* the -50% centring has to live in the same transform as the entry scale, or
+	   the two fight and the panel animates in from the corner */
+	opacity: 0;
+	transform: translate(-50%, -50%) scale(0.96);
+
+	/* MUST be inert when closed. The old right-hand drawer closed by translating
+	   itself off-screen, so it could not be in the way. This one closes by fading
+	   — and an element at `opacity: 0` is still hit-tested, so without these a
+	   1280x900 invisible panel sits dead centre and swallows every click on the
+	   page until a reload. `visibility` also takes it out of the tab order, which
+	   matters because the document preview holds a focusable iframe.
+
+	   The 0s visibility transition is delayed on the way out so the fade is still
+	   seen, and undelayed on the way in so the panel is interactive immediately. */
+	pointer-events: none;
+	visibility: hidden;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring),
+		opacity var(--aurora-dur-2) var(--aurora-ease),
+		visibility 0s linear var(--aurora-dur-3);
+}
+
+.aurora-ql-panel.open {
+	opacity: 1;
+	transform: translate(-50%, -50%) scale(1);
+	pointer-events: auto;
+	visibility: visible;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring),
+		opacity var(--aurora-dur-2) var(--aurora-ease),
+		visibility 0s;
+}
+
+.aurora-ql-panel-head {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--border-color);
+	background: linear-gradient(180deg, var(--aurora-softer), transparent);
+}
+
+.aurora-ql-panel-title {
+	flex: 1;
+	min-width: 0;
+	font-weight: var(--weight-semibold);
+	font-size: var(--text-sm);
+	letter-spacing: var(--aurora-tracking-snug);
+	color: var(--heading-color);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.aurora-ql-panel-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+}
+
+.aurora-ql-btn {
+	padding: 5px 11px;
+	border-radius: var(--border-radius-sm);
+	background: var(--btn-default-bg);
+	color: var(--text-color);
+	font-size: var(--text-xs);
+	font-weight: var(--weight-medium);
+	text-decoration: none;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-ql-btn:hover {
+	background: var(--aurora-soft);
+	color: var(--aurora-700);
+	text-decoration: none;
+}
+
+[data-theme="dark"] .aurora-ql-btn:hover { color: var(--aurora-300); }
+
+.aurora-ql-close {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-ql-close:hover {
+	background: var(--fg-hover-color);
+	color: var(--text-color);
+}
+
+.aurora-ql-panel-body {
+	flex: 1;
+	min-height: 0;
+	position: relative;
+	background: var(--bg-color);
+}
+
+.aurora-ql-frame {
+	width: 100%;
+	height: 100%;
+	border: none;
+	display: block;
+	background: var(--bg-color);
+}
+
+.aurora-ql-stage {
+	width: 100%;
+	height: 100%;
+	display: grid;
+	place-items: center;
+	padding: 20px;
+	overflow: auto;
+}
+
+.aurora-ql-stage img {
+	max-width: 100%;
+	max-height: 100%;
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-lg);
+}
+
+.aurora-ql-stage-empty {
+	grid-auto-rows: min-content;
+	align-content: center;
+	gap: 8px;
+	text-align: center;
+	color: var(--text-color);
+}
+
+.aurora-ql-stage-empty .aurora-ql-file-ext { margin: 0 auto; }
+.aurora-ql-muted { color: var(--text-muted); font-size: var(--text-xs); }
+
+/* the iframe takes a moment; show something in the meantime */
+.aurora-ql-loading {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-content: center;
+	gap: 8px;
+	background: var(--bg-color);
+	z-index: 1;
+}
+
+.aurora-ql-loading i {
+	display: block;
+	width: 180px;
+	height: 10px;
+	border-radius: 999px;
+	background-image: linear-gradient(
+		90deg,
+		var(--control-bg) 0%,
+		var(--aurora-soft) 50%,
+		var(--control-bg) 100%
+	);
+	background-size: 220% 100%;
+	animation: aurora-shimmer 1.4s linear infinite;
+}
+
+.aurora-ql-loading i:nth-child(2) { width: 130px; }
+.aurora-ql-loading i:nth-child(3) { width: 156px; }
+
+/* -----------------------------------------------------------------------------
+   Spreadsheets
+   -------------------------------------------------------------------------- */
+.aurora-ql-sheet {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+}
+
+.aurora-ql-sheet-scroll {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.aurora-ql-sheet-table {
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: var(--text-sm);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.aurora-ql-sheet-table th,
+.aurora-ql-sheet-table td {
+	padding: 7px 12px;
+	border-right: 1px solid var(--border-color);
+	border-bottom: 1px solid var(--border-color);
+	max-width: 320px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* the header has to stay put — a spreadsheet you have to scroll is exactly
+   where losing the column names hurts most */
+.aurora-ql-sheet-table thead th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background: var(--aurora-softer);
+	color: var(--heading-color);
+	font-weight: var(--weight-semibold);
+	text-align: left;
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+}
+
+.aurora-ql-sheet-table tbody tr:hover td {
+	background: var(--aurora-softer);
+}
+
+.aurora-ql-sheet-tabs {
+	flex: none;
+	display: flex;
+	gap: 4px;
+	padding: 8px 10px;
+	overflow-x: auto;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.aurora-ql-sheet-tab {
+	flex: none;
+	padding: 4px 12px;
+	border: none;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: var(--text-xs);
+	font-weight: var(--weight-medium);
+	cursor: pointer;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-ql-sheet-tab:hover {
+	background: var(--fg-hover-color);
+	color: var(--text-color);
+}
+
+.aurora-ql-sheet-tab.active {
+	background: var(--aurora-soft);
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .aurora-ql-sheet-tab.active { color: var(--aurora-300); }
+
+.aurora-ql-sheet-note {
+	flex: none;
+	padding: 7px 12px;
+	border-top: 1px solid var(--border-color);
+	background: var(--aurora-softer);
+	color: var(--text-muted);
+	font-size: var(--text-xs);
+}
+
+.aurora-ql-sheet-msg {
+	display: grid;
+	place-content: center;
+	gap: 6px;
+	height: 100%;
+	padding: 24px;
+	text-align: center;
+	color: var(--text-color);
+}
+
+/* -----------------------------------------------------------------------------
+   Reduced motion / feature off
+   -------------------------------------------------------------------------- */
+html[data-aurora-motion="off"] .aurora-ql-peek,
+html[data-aurora-motion="off"] .aurora-ql-panel {
+	transition-duration: 1ms;
+}
+
+html[data-aurora-quicklook="0"] .aurora-ql-peek,
+html[data-aurora-quicklook="0"] .aurora-ql-panel,
+html[data-aurora-quicklook="0"] .aurora-ql-backdrop {
+	display: none !important;
+}
+
+/* -----------------------------------------------------------------------------
+   Mobile — no hover, so the panel becomes a bottom sheet
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+	.aurora-ql-peek { display: none; }
+
+	/* a phone gets a bottom sheet rather than a centred dialog. Both transforms
+	   must be restated here, or the -50% centring above survives and pushes the
+	   sheet off-screen. */
+	.aurora-ql-panel {
+		top: auto;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		height: 88vh;
+		border: none;
+		border-top: 1px solid var(--border-color);
+		border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+		opacity: 1;
+		transform: translateY(100%);
+	}
+
+	.aurora-ql-panel.open {
+		opacity: 1;
+		transform: none;
+	}
+}

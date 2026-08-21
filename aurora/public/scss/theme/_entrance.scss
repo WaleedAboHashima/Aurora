@@ -1,0 +1,232 @@
+/* =============================================================================
+   Aurora — sign-in entrance
+   -----------------------------------------------------------------------------
+   The desk half of the login transition. `web/_login.scss` blooms an accent
+   field out from the login card as the page hands over; this expands the same
+   field away and lifts the desk in behind it, so the two pages read as one
+   movement instead of a flash of white between them.
+
+   Everything animated here is `opacity` or `transform` — the two properties
+   that composite on the GPU, and the only ones that reliably interpolate. (An
+   earlier pass used a growing hole in a `mask-image` gradient, which is the
+   nicer idea but does not actually animate in any browser: gradients are not
+   interpolable, so it snapped.)
+
+   Mounted by `theme/entrance.js`, only on the page load directly after a
+   successful login.
+   ========================================================================== */
+
+.aurora-entry {
+	position: fixed;
+	inset: 0;
+	z-index: 2200;
+	display: grid;
+	place-items: center;
+	pointer-events: none; /* never swallow a click, even mid-retract */
+
+	background-color: var(--bg-color);
+	background-image: radial-gradient(
+			60vmax 60vmax at 50% 50%,
+			hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.3),
+			transparent 70%
+		),
+		radial-gradient(
+			90vmax 70vmax at 12% 108%,
+			hsl(var(--aurora-alt-h) 78% 62% / 0.22),
+			transparent 64%
+		);
+
+	opacity: 1;
+	transform: scale(1);
+	transition: opacity 600ms var(--aurora-ease), transform 780ms var(--aurora-ease-out);
+}
+
+/* scaling the curtain scales its glow with it, so the accent reads as opening
+   outward into the desk rather than simply fading off */
+.aurora-entry.leaving {
+	opacity: 0;
+	transform: scale(1.18);
+}
+
+/* -----------------------------------------------------------------------------
+   Frappe's own splash
+   -----------------------------------------------------------------------------
+   `desk.html` renders `<div class="centered splash">` at the top of <body>, and
+   core centres it with `.centered { position:absolute; top:50%; left:50%;
+   transform: translate(-50%,-50%) }`. That translate is measured against the
+   element's own box, so until the logo <img> has resolved its intrinsic size the
+   box is ~0x0 and the mark is positioned from the wrong origin — it lands in the
+   corner and snaps to the middle once the image loads.
+
+   This rule is deliberately NOT scoped to `.aurora-entering`. That class is only
+   added when our bundle parses, and `app_include_js` runs in install order —
+   frappe, then erpnext, then us. On a cold desk load the whole of core's and
+   erpnext's bundles execute first, so a class-gated rule arrives roughly a
+   second late: exactly the window where the mark is visibly in the wrong place.
+   An earlier attempt at this bug gated on that class and therefore could never
+   have worked.
+
+   Centring here is size-independent (a full-viewport grid), so there is no
+   intermediate state to see whether the image has loaded or not.
+   -------------------------------------------------------------------------- */
+body .splash {
+	position: fixed;
+	inset: 0;
+	transform: none;
+	display: grid;
+	place-items: center;
+	/* a transparent full-viewport layer must never eat a click */
+	pointer-events: none;
+
+	/* Painted to match `.aurora-entry` exactly, and for the same reason the
+	   centring is here rather than in JS: this rule ships in a render-blocking
+	   stylesheet, so it is in effect at the desk's FIRST paint. The curtain
+	   cannot be — it mounts when our bundle parses at the end of <body>, after
+	   core's and erpnext's bundles.
+
+	   Without this the handoff went: login splash (accent) -> desk splash on
+	   core's white --bg-color -> curtain (accent), i.e. a white flash between
+	   two identical accent frames. Now the desk splash IS the curtain visually,
+	   and the JS one takes over with nothing to see in between. */
+	background-color: var(--bg-color);
+	background-image: radial-gradient(
+			60vmax 60vmax at 50% 50%,
+			hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.3),
+			transparent 70%
+		),
+		radial-gradient(
+			90vmax 70vmax at 12% 108%,
+			hsl(var(--aurora-alt-h) 78% 62% / 0.22),
+			transparent 64%
+		);
+}
+
+/* and the mark itself, matching .aurora-entry-mark so the swap is invisible */
+body .splash img {
+	width: auto;
+	max-width: 168px;
+	max-height: 96px;
+	filter: drop-shadow(0 12px 34px var(--aurora-glow));
+}
+
+/* once our curtain is up it shows the same mark, so drop the duplicate */
+html.aurora-entering .splash {
+	display: none !important;
+}
+
+.aurora-entry-mark {
+	width: auto;
+	max-width: 168px;
+	max-height: 96px;
+	filter: drop-shadow(0 12px 34px var(--aurora-glow));
+	animation: aurora-entry-mark 620ms var(--aurora-ease-spring) both;
+	transition: opacity 240ms var(--aurora-ease), transform 420ms var(--aurora-ease-out);
+}
+
+/* the mark leaves ahead of the curtain, so it is gone before the desk shows */
+.aurora-entry.leaving .aurora-entry-mark {
+	opacity: 0;
+	transform: scale(1.3);
+}
+
+/* the ring pushing outward behind the mark — the same one the splash used */
+.aurora-entry::after {
+	content: "";
+	position: absolute;
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+	border: 2px solid var(--aurora-500);
+	animation: aurora-entry-ring 900ms var(--aurora-ease-out) infinite;
+}
+
+.aurora-entry.leaving::after {
+	animation: none;
+	opacity: 0;
+}
+
+/* -----------------------------------------------------------------------------
+   The desk arriving behind the curtain
+   -----------------------------------------------------------------------------
+   Two states, because the curtain goes up long before the desk is ready:
+
+     .aurora-entering    from parse time — hold the desk hidden. However long
+                         boot takes, there is nothing to see behind the accent.
+     .aurora-entry-play  added when boot finishes — travel in. Tying the motion
+                         to readiness rather than to a timer is what stops the
+                         reveal landing on a half-built page.
+
+   `#body` and `.navbar` are targeted rather than their shared `.main-section`
+   parent, so the two transforms do not compound.
+   -------------------------------------------------------------------------- */
+html.aurora-entering #body,
+html.aurora-entering .navbar,
+html.aurora-entering .layout-side-section {
+	opacity: 0;
+}
+
+/* an animation's own values beat the `opacity: 0` above for as long as it
+   runs, and `both` holds the final frame after it ends */
+html.aurora-entering.aurora-entry-play #body {
+	animation: aurora-entry-rise 760ms var(--aurora-ease-out) both;
+}
+
+html.aurora-entering.aurora-entry-play .navbar {
+	animation: aurora-entry-drop 620ms var(--aurora-ease-out) 60ms both;
+}
+
+html.aurora-entering.aurora-entry-play .layout-side-section {
+	animation: aurora-entry-slide 640ms var(--aurora-ease-out) 120ms both;
+}
+
+/* -----------------------------------------------------------------------------
+   Keyframes
+   -------------------------------------------------------------------------- */
+@keyframes aurora-entry-mark {
+	0% { opacity: 0; transform: scale(0.8); }
+	60% { opacity: 1; transform: scale(1.04); }
+	100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes aurora-entry-ring {
+	0% { opacity: 0.5; transform: scale(0.6); }
+	100% { opacity: 0; transform: scale(1.9); }
+}
+
+@keyframes aurora-entry-rise {
+	from { opacity: 0; transform: scale(0.965) translateY(14px); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-entry-drop {
+	from { opacity: 0; transform: translateY(-100%); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-entry-slide {
+	from { opacity: 0; transform: translateX(-24px); }
+	to { opacity: 1; transform: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   Reduced motion — entrance.js bails before mounting anything, so this is only
+   a backstop for a preference that changes mid-animation.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	.aurora-entry { display: none; }
+
+	.aurora-entry-mark,
+	html.aurora-entering.aurora-entry-play #body,
+	html.aurora-entering.aurora-entry-play .navbar,
+	html.aurora-entering.aurora-entry-play .layout-side-section {
+		animation: none;
+		transition: none;
+	}
+
+	/* without the animation to override it, the hold would never lift */
+	html.aurora-entering #body,
+	html.aurora-entering .navbar,
+	html.aurora-entering .layout-side-section {
+		opacity: 1;
+	}
+}

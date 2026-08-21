@@ -1,0 +1,810 @@
+/* =============================================================================
+   Aurora — the theme's own UI: appearance dock, control panel, quick actions
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Floating dock (bottom-right, stacked above the back-to-top pill)
+   -------------------------------------------------------------------------- */
+.aurora-dock {
+	position: fixed;
+	right: 22px;
+	bottom: 72px;
+	z-index: 1030;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	align-items: flex-end;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-out),
+		opacity var(--aurora-dur-3) var(--aurora-ease);
+}
+
+/* -----------------------------------------------------------------------------
+   Auto-hide
+   -----------------------------------------------------------------------------
+   The dock is a convenience, not part of the app, so it should not sit in the
+   corner demanding attention. When idle it retreats most of the way off the
+   right edge and goes nearly transparent, leaving a sliver to aim at; hovering
+   it — or anything inside it gaining focus — brings it straight back.
+
+   It stays awake whenever the appearance panel is open (`is-awake`, set in
+   dock.js), so the panel's own control can never slide out from under the
+   pointer.
+   -------------------------------------------------------------------------- */
+html[data-aurora-dock-autohide="1"] .aurora-dock {
+	transform: translateX(62%);
+	opacity: 0.22;
+}
+
+html[data-aurora-dock-autohide="1"] .aurora-dock:hover,
+html[data-aurora-dock-autohide="1"] .aurora-dock:focus-within,
+html[data-aurora-dock-autohide="1"] .aurora-dock.is-awake {
+	transform: none;
+	opacity: 1;
+}
+
+/* a wider invisible target than the visible sliver, so it is easy to grab */
+html[data-aurora-dock-autohide="1"] .aurora-dock::before {
+	content: "";
+	position: absolute;
+	top: -12px;
+	bottom: -12px;
+	right: -24px;
+	left: -40px;
+	pointer-events: auto;
+}
+
+/* the labels would fly out over the page while the dock is retreating */
+html[data-aurora-dock-autohide="1"] .aurora-dock:not(:hover) .aurora-dock-label {
+	display: none;
+}
+
+/* the back-to-top pill lives in the same corner and follows the same rule */
+html[data-aurora-dock-autohide="1"] .aurora-to-top.visible {
+	opacity: 0.28;
+	transform: translateX(52%);
+}
+
+html[data-aurora-dock-autohide="1"] .aurora-to-top.visible:hover {
+	opacity: 1;
+	transform: translateY(-2px) scale(1.05);
+}
+
+.aurora-dock-btn {
+	width: 40px;
+	height: 40px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--border-color);
+	border-radius: 999px;
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+	color: var(--text-color);
+	box-shadow: var(--shadow-lg);
+	cursor: pointer;
+	position: relative;
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		background-color var(--aurora-dur-2) var(--aurora-ease),
+		color var(--aurora-dur-2) var(--aurora-ease),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-dock-btn:hover {
+	transform: translateY(-2px) scale(1.06);
+	background: var(--aurora-500);
+	border-color: transparent;
+	color: #fff;
+	box-shadow: 0 10px 28px -10px var(--aurora-glow);
+}
+
+.aurora-dock-btn:active {
+	transform: scale(0.94);
+}
+
+.aurora-dock-btn.is-open {
+	background: var(--aurora-500);
+	color: #fff;
+	border-color: transparent;
+}
+
+.aurora-dock-btn svg {
+	width: 18px;
+	height: 18px;
+	stroke: currentColor;
+	fill: none;
+	stroke-width: 1.7;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.aurora-dock-btn:hover svg {
+	transform: rotate(30deg);
+}
+
+.aurora-dock-btn[data-action="mode"]:hover svg {
+	transform: rotate(-20deg) scale(1.1);
+}
+
+/* label that slides out on hover */
+.aurora-dock-btn .aurora-dock-label {
+	position: absolute;
+	right: calc(100% + 10px);
+	white-space: nowrap;
+	font-size: var(--text-xs);
+	font-weight: var(--weight-medium);
+	padding: 4px 9px;
+	border-radius: var(--border-radius-sm);
+	background: var(--aurora-surface);
+	color: var(--text-color);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-md);
+	opacity: 0;
+	transform: translateX(8px);
+	pointer-events: none;
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.aurora-dock-btn:hover .aurora-dock-label {
+	opacity: 1;
+	transform: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Appearance panel
+   -------------------------------------------------------------------------- */
+.aurora-panel {
+	position: fixed;
+	right: 22px;
+	bottom: 122px;
+	z-index: 1035;
+	width: 316px;
+	max-width: calc(100vw - 32px);
+	max-height: min(72vh, 640px);
+	display: flex;
+	flex-direction: column;
+	padding: 16px;
+	border-radius: var(--border-radius-xl);
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(22px);
+	backdrop-filter: saturate(180%) blur(22px);
+	border: 1px solid var(--aurora-glass-border);
+	box-shadow: var(--shadow-2xl);
+	transform-origin: bottom right;
+	opacity: 0;
+	transform: translateY(12px) scale(0.94);
+	pointer-events: none;
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease),
+		transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.aurora-panel.open {
+	opacity: 1;
+	transform: none;
+	pointer-events: auto;
+}
+
+.aurora-panel-title {
+	font-size: var(--text-sm);
+	font-weight: var(--weight-semibold);
+	color: var(--heading-color);
+	margin-bottom: 2px;
+}
+
+.aurora-panel-sub {
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+	margin-bottom: 12px;
+}
+
+/* --- tabs ---------------------------------------------------------------- */
+.aurora-tabs {
+	position: relative;
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	gap: 3px;
+	padding: 3px;
+	border-radius: var(--border-radius-md);
+	background: var(--control-bg);
+	margin-bottom: 14px;
+	flex: none;
+}
+
+.aurora-tabs button {
+	appearance: none;
+	border: none;
+	background: transparent;
+	font-size: var(--text-xs);
+	font-weight: var(--weight-medium);
+	color: var(--text-muted);
+	padding: 6px 4px;
+	border-radius: calc(var(--border-radius-md) - 3px);
+	cursor: pointer;
+	position: relative;
+	z-index: 1;
+	transition: color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-tabs button.active {
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .aurora-tabs button.active {
+	color: var(--aurora-200);
+}
+
+.aurora-tabs-thumb {
+	position: absolute;
+	top: 3px;
+	bottom: 3px;
+	left: 3px;
+	border-radius: calc(var(--border-radius-md) - 3px);
+	background: var(--card-bg);
+	box-shadow: var(--shadow-sm);
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring),
+		width var(--aurora-dur-3) var(--aurora-ease-spring);
+	z-index: 0;
+}
+
+/* --- scrollable body ----------------------------------------------------- */
+.aurora-panel-body {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	margin: 0 -4px;
+	padding: 0 4px;
+	animation: aurora-rise-sm var(--aurora-dur-2) var(--aurora-ease-out) backwards;
+}
+
+.aurora-field {
+	margin-bottom: 14px;
+}
+
+.aurora-field > label {
+	display: block;
+	font-size: var(--text-tiny);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-weight: var(--weight-semibold);
+	color: var(--text-muted);
+	margin-bottom: 7px;
+}
+
+/* segmented control */
+.aurora-seg {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	gap: 3px;
+	padding: 3px;
+	border-radius: var(--border-radius-md);
+	background: var(--control-bg);
+	position: relative;
+}
+
+.aurora-seg button {
+	appearance: none;
+	border: none;
+	background: transparent;
+	font-size: var(--text-xs);
+	font-weight: var(--weight-medium);
+	color: var(--text-muted);
+	padding: 6px 4px;
+	border-radius: calc(var(--border-radius-md) - 3px);
+	cursor: pointer;
+	position: relative;
+	z-index: 1;
+	transition: color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-seg button:hover {
+	color: var(--text-color);
+}
+
+.aurora-seg button.active {
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .aurora-seg button.active {
+	color: var(--aurora-200);
+}
+
+/* the pill that slides between options */
+.aurora-seg .aurora-seg-thumb {
+	position: absolute;
+	top: 3px;
+	bottom: 3px;
+	left: 3px;
+	border-radius: calc(var(--border-radius-md) - 3px);
+	background: var(--card-bg);
+	box-shadow: var(--shadow-sm);
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring),
+		width var(--aurora-dur-3) var(--aurora-ease-spring);
+	z-index: 0;
+}
+
+/* accent swatches */
+.aurora-swatches {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.aurora-swatch {
+	width: 26px;
+	height: 26px;
+	border-radius: 999px;
+	border: 2px solid transparent;
+	cursor: pointer;
+	position: relative;
+	background: hsl(var(--sw-h) 84% 60%);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-swatch:hover {
+	transform: scale(1.16);
+	box-shadow: 0 6px 14px -6px hsl(var(--sw-h) 84% 50% / 0.8);
+}
+
+.aurora-swatch.active {
+	box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px hsl(var(--sw-h) 84% 60%);
+}
+
+.aurora-swatch.active::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	animation: aurora-check-pop var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+/* hue slider */
+.aurora-hue {
+	width: 100%;
+	height: 12px;
+	appearance: none;
+	border-radius: 999px;
+	outline: none;
+	cursor: pointer;
+	background: linear-gradient(
+		90deg,
+		hsl(0 84% 60%), hsl(60 84% 60%), hsl(120 84% 60%),
+		hsl(180 84% 60%), hsl(240 84% 60%), hsl(300 84% 60%), hsl(360 84% 60%)
+	);
+}
+
+.aurora-hue::-webkit-slider-thumb {
+	appearance: none;
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	background: var(--aurora-500);
+	border: 3px solid #fff;
+	box-shadow: var(--shadow-md);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.aurora-hue::-webkit-slider-thumb:hover {
+	transform: scale(1.18);
+}
+
+.aurora-hue::-moz-range-thumb {
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	background: var(--aurora-500);
+	border: 3px solid #fff;
+	box-shadow: var(--shadow-md);
+}
+
+/* switch row */
+.aurora-switch-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 7px 0;
+}
+
+.aurora-switch-row .aurora-switch-text {
+	font-size: var(--text-sm);
+	color: var(--text-color);
+	display: flex;
+	flex-direction: column;
+	line-height: 1.25;
+	min-width: 0;
+}
+
+.aurora-switch-row .aurora-switch-text small {
+	font-size: var(--text-tiny);
+	color: var(--text-muted);
+	margin-top: 1px;
+}
+
+/* the per-feature list follows the master animation switch */
+.aurora-feature-list {
+	margin-top: 12px;
+	padding-top: 10px;
+	border-top: 1px solid var(--border-color);
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease),
+		filter var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.aurora-feature-list.is-disabled {
+	opacity: 0.45;
+	filter: grayscale(1);
+}
+
+.aurora-note {
+	margin: 14px 0 0;
+	font-size: var(--text-tiny);
+	color: var(--text-muted);
+	line-height: 1.5;
+}
+
+.aurora-switch {
+	width: 38px;
+	height: 22px;
+	border-radius: 999px;
+	background: var(--switch-bg);
+	border: none;
+	position: relative;
+	cursor: pointer;
+	flex: none;
+	transition: background-color var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.aurora-switch::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	border-radius: 999px;
+	background: #fff;
+	box-shadow: var(--shadow-sm);
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.aurora-switch[aria-checked="true"] {
+	background: var(--aurora-500);
+}
+
+.aurora-switch[aria-checked="true"]::after {
+	transform: translateX(16px);
+}
+
+.aurora-panel-footer {
+	flex: none;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 6px;
+	padding-top: 12px;
+	border-top: 1px solid var(--border-color);
+}
+
+.aurora-link-btn {
+	appearance: none;
+	border: none;
+	background: none;
+	padding: 0;
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-link-btn:hover {
+	color: var(--aurora-600);
+}
+
+.aurora-kbd {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	font-size: 10px;
+	font-weight: var(--weight-semibold);
+	padding: 2px 5px;
+	border-radius: 5px;
+	background: var(--control-bg);
+	border: 1px solid var(--border-color);
+	color: var(--text-muted);
+	font-family: inherit;
+}
+
+/* -----------------------------------------------------------------------------
+   Quick actions palette
+   -------------------------------------------------------------------------- */
+.aurora-palette-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 1040;
+	background: var(--aurora-scrim);
+	-webkit-backdrop-filter: blur(5px);
+	backdrop-filter: blur(5px);
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	padding-top: 12vh;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-palette-backdrop.open {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.aurora-palette {
+	width: 560px;
+	max-width: calc(100vw - 32px);
+	max-height: 62vh;
+	display: flex;
+	flex-direction: column;
+	border-radius: var(--border-radius-xl);
+	background: var(--modal-bg);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-2xl);
+	overflow: hidden;
+	transform: translateY(-16px) scale(0.97);
+	opacity: 0;
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring),
+		opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-palette-backdrop.open .aurora-palette {
+	transform: none;
+	opacity: 1;
+}
+
+.aurora-palette-input-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.aurora-palette-input-row svg {
+	width: 18px;
+	height: 18px;
+	flex: none;
+	stroke: var(--text-muted);
+	fill: none;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+}
+
+.aurora-palette input {
+	flex: 1;
+	border: none;
+	outline: none;
+	background: transparent;
+	font-size: var(--text-lg);
+	color: var(--text-color);
+}
+
+.aurora-palette input::placeholder {
+	color: var(--text-muted);
+}
+
+.aurora-palette-list {
+	overflow-y: auto;
+	padding: 6px;
+}
+
+.aurora-palette-group {
+	font-size: var(--text-tiny);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-weight: var(--weight-semibold);
+	color: var(--text-muted);
+	padding: 10px 10px 4px;
+}
+
+.aurora-palette-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 10px;
+	border-radius: var(--border-radius-sm);
+	cursor: pointer;
+	color: var(--text-color);
+	font-size: var(--text-sm);
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease),
+		transform var(--aurora-dur-1) var(--aurora-ease-out);
+	animation: aurora-rise-sm var(--aurora-dur-2) var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 14ms);
+}
+
+.aurora-palette-item .aurora-palette-icon {
+	width: 26px;
+	height: 26px;
+	flex: none;
+	display: grid;
+	place-items: center;
+	border-radius: var(--border-radius-sm);
+	background: var(--aurora-soft);
+	color: var(--aurora-700);
+	font-size: 11px;
+	font-weight: var(--weight-semibold);
+}
+
+.aurora-palette-item .aurora-palette-meta {
+	margin-left: auto;
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+}
+
+.aurora-palette-item.selected,
+.aurora-palette-item:hover {
+	background: var(--aurora-soft);
+	transform: translateX(2px);
+}
+
+.aurora-palette-empty {
+	padding: 34px 16px;
+	text-align: center;
+	color: var(--text-muted);
+	font-size: var(--text-sm);
+}
+
+.aurora-palette-footer {
+	display: flex;
+	gap: 14px;
+	align-items: center;
+	padding: 9px 14px;
+	border-top: 1px solid var(--border-color);
+	background: var(--subtle-accent);
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   Mobile
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+	.aurora-dock { right: 14px; bottom: 66px; }
+	.aurora-to-top { right: 14px; bottom: 14px; }
+	.aurora-panel { right: 14px; left: 14px; width: auto; bottom: 114px; }
+	.aurora-palette-backdrop { padding-top: 8vh; }
+}
+
+/* -----------------------------------------------------------------------------
+   Custom font field
+   -------------------------------------------------------------------------- */
+.aurora-font-custom {
+	margin-top: 9px;
+	animation: aurora-rise-sm var(--aurora-dur-2) var(--aurora-ease-out) backwards;
+}
+
+.aurora-font-custom.hidden {
+	display: none;
+}
+
+.aurora-font-input-row {
+	display: flex;
+	gap: 6px;
+}
+
+.aurora-font-input {
+	flex: 1;
+	min-width: 0;
+	height: 30px;
+	padding: 0 10px;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	background: var(--control-bg);
+	box-shadow: inset 0 0 0 1px var(--border-color);
+	color: var(--text-color);
+	font-size: var(--text-sm);
+	font-family: var(--font-stack);
+	outline: none;
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-font-input:focus {
+	box-shadow: inset 0 0 0 1px var(--aurora-500), 0 0 0 2px var(--aurora-ring);
+}
+
+.aurora-font-browse {
+	flex: none;
+	height: 30px;
+	padding: 0 10px;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	background: var(--btn-default-bg);
+	color: var(--text-color);
+	font-size: var(--text-xs);
+	font-weight: var(--weight-medium);
+	cursor: pointer;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-font-browse:hover {
+	background: var(--aurora-soft);
+	color: var(--aurora-700);
+}
+
+.aurora-font-status {
+	margin: 6px 0 0;
+	font-size: var(--text-tiny);
+	line-height: 1.45;
+	min-height: 1em;
+	transition: color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-font-status[data-state="idle"] { color: var(--text-muted); }
+.aurora-font-status[data-state="checking"] { color: var(--text-muted); }
+.aurora-font-status[data-state="ok"] { color: var(--green-600); }
+.aurora-font-status[data-state="missing"] { color: var(--red-500); }
+
+/* a quiet pulse while a lookup is in flight */
+.aurora-font-status[data-state="checking"] {
+	animation: aurora-breathe 1.4s var(--aurora-ease) infinite;
+}
+
+/* -----------------------------------------------------------------------------
+   Toast position picker
+   -----------------------------------------------------------------------------
+   A 3x2 grid standing in for the screen. Each cell shows a dot pinned to the
+   corner it represents, so the control explains itself without labels.
+   -------------------------------------------------------------------------- */
+.aurora-toast-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 6px;
+}
+
+.aurora-toast-cell {
+	position: relative;
+	height: 34px;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-sm);
+	background: var(--control-bg);
+	cursor: pointer;
+	padding: 0;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		border-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.aurora-toast-cell:hover {
+	border-color: var(--aurora-300);
+	transform: translateY(-1px);
+}
+
+.aurora-toast-cell.active {
+	border-color: var(--aurora-500);
+	background: var(--aurora-soft);
+}
+
+/* the dot — a stand-in for the toast, parked in the matching corner */
+.aurora-toast-cell i {
+	position: absolute;
+	width: 12px;
+	height: 5px;
+	border-radius: 999px;
+	background: var(--text-muted);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-toast-cell.active i {
+	background: var(--aurora-gradient);
+}
+
+.aurora-toast-cell[data-pos^="top"] i { top: 5px; }
+.aurora-toast-cell[data-pos^="bottom"] i { bottom: 5px; }
+.aurora-toast-cell[data-pos$="-left"] i { left: 5px; }
+.aurora-toast-cell[data-pos$="-right"] i { right: 5px; }
+
+.aurora-toast-cell[data-pos$="-center"] i {
+	left: 50%;
+	transform: translateX(-50%);
+}

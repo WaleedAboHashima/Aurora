@@ -1,0 +1,485 @@
+/* =============================================================================
+   Aurora — the Desktop launcher (/desk)
+   -----------------------------------------------------------------------------
+   IMPORTANT — why every rule here is scoped:
+
+   `frappe/desk/page/desktop/desktop.css` is a *page asset*. Frappe loads page
+   assets at runtime with `document.head.appendChild(link)` (see
+   frappe/public/js/frappe/assets.js), which means it lands in <head> AFTER this
+   bundle. On equal specificity the later sheet wins, so a bare `.desktop-icon`
+   rule here would silently lose to desktop.css's own `.desktop-icon`.
+
+   Everything below is therefore scoped under `.desktop-wrapper` (or a deeper
+   ancestor), which adds a class to each selector and takes the cascade back.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Canvas
+   -------------------------------------------------------------------------- */
+/* NOTE: deliberately no `position` here. Core leaves .desktop-wrapper static,
+   and .desktop-pane / .desktop-edit inside it are absolutely positioned against
+   the viewport. Making this a containing block would silently move both. */
+
+/* -----------------------------------------------------------------------------
+   Top bar — frosted, hairline, and it stops competing with the icon grid
+   -------------------------------------------------------------------------- */
+.desktop-wrapper .desktop-navbar,
+.desktop-wrapper .navbar-container {
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(20px);
+	backdrop-filter: saturate(180%) blur(20px);
+	border-bottom: 1px solid transparent;
+	transition: border-color var(--aurora-dur-3) var(--aurora-ease),
+		box-shadow var(--aurora-dur-3) var(--aurora-ease);
+	gap: 16px;
+	padding: 10px 22px;
+}
+
+.desktop-wrapper .navbar-container.aurora-condensed {
+	border-bottom-color: var(--border-color);
+	box-shadow: 0 6px 18px -14px hsl(var(--aurora-shadow-color) / 0.5);
+}
+
+/* app logo gets a plate so it reads as a button, not a stray image */
+.desktop-wrapper .navbar-home {
+	display: flex;
+	align-items: center;
+	padding: 5px;
+	border-radius: var(--border-radius-md);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.desktop-wrapper .navbar-home:hover {
+	background-color: var(--aurora-soft);
+	transform: rotate(-6deg) scale(1.06);
+}
+
+.desktop-wrapper .navbar-home img {
+	height: 28px;
+	width: auto;
+	border-radius: var(--border-radius-sm);
+}
+
+/* --- search --------------------------------------------------------------
+   The launcher's search is a *button* that opens a modal, not an input, so it
+   is styled as a pill target rather than a field.
+   -------------------------------------------------------------------------- */
+.desktop-wrapper .desktop-search-wrapper {
+	max-width: 460px;
+	margin: 0 auto;
+}
+
+.desktop-wrapper .desktop-navbar-modal-search {
+	height: 36px;
+	padding: 0 14px;
+	border-radius: var(--border-radius-full);
+	background-color: var(--control-bg);
+	box-shadow: inset 0 0 0 1px var(--border-color);
+	transition: box-shadow var(--aurora-dur-2) var(--aurora-ease),
+		background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out);
+}
+
+.desktop-wrapper .desktop-navbar-modal-search:hover {
+	outline: none;
+	background-color: var(--fg-color);
+	box-shadow: inset 0 0 0 1px var(--aurora-300), var(--shadow-sm);
+	transform: translateY(-1px);
+}
+
+.desktop-wrapper .desktop-navbar-modal-search:focus-visible {
+	box-shadow: inset 0 0 0 1px var(--aurora-400), var(--focus-default);
+}
+
+.desktop-wrapper .desktop-search-icon > svg {
+	stroke: var(--aurora-ink-icon-muted);
+	transition: stroke var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.desktop-wrapper .desktop-navbar-modal-search:hover .desktop-search-icon > svg {
+	stroke: var(--aurora-600);
+}
+
+.desktop-wrapper .desktop-keyboard-shortcut {
+	font-size: 10px;
+	font-weight: var(--weight-semibold);
+	padding: 2px 6px;
+	border-radius: 5px;
+	background: var(--fg-color);
+	border: 1px solid var(--border-color);
+	color: var(--text-muted);
+}
+
+/* --- bell + avatar -------------------------------------------------------- */
+.desktop-wrapper .desktop-notification-icon,
+.desktop-wrapper .desktop-cloud-settings {
+	width: 32px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--border-radius-full);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.desktop-wrapper .desktop-notification-icon:hover,
+.desktop-wrapper .desktop-cloud-settings:hover {
+	background: var(--aurora-soft);
+	transform: scale(1.08);
+	--icon-stroke: var(--aurora-600);
+}
+
+.desktop-wrapper .desktop-avatar .avatar-frame {
+	box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 3px var(--aurora-ring);
+	transition: box-shadow var(--aurora-dur-3) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.desktop-wrapper .desktop-avatar:hover .avatar-frame {
+	box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--aurora-500);
+	transform: scale(1.06);
+}
+
+/* -----------------------------------------------------------------------------
+   The icon grid
+   -------------------------------------------------------------------------- */
+.desktop-wrapper .desktop-container .icons,
+.desktop-wrapper .icons-container .icons {
+	gap: 20px;
+}
+
+.desktop-wrapper .desktop-icon {
+	border-radius: var(--border-radius-xl);
+	border-color: transparent;
+	cursor: pointer;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-3) var(--aurora-ease-spring);
+}
+
+.desktop-wrapper .desktop-icon:hover {
+	background-color: var(--aurora-softer);
+	transform: translateY(-3px);
+}
+
+.desktop-wrapper .desktop-icon:active {
+	transform: translateY(-1px) scale(0.97);
+	transition-duration: 80ms;
+}
+
+/* --- the tile itself -----------------------------------------------------
+   App logos are per-app images, so the theme can't recolour them. What it can
+   do is give every tile the same plate, corner and shadow, so a row of
+   third-party logos still reads as one designed set.
+   -------------------------------------------------------------------------- */
+.desktop-wrapper .icon-container {
+	border-radius: 15px;
+	box-shadow: 0 1px 2px hsl(var(--aurora-shadow-color) / 0.14),
+		0 4px 10px -4px hsl(var(--aurora-shadow-color) / 0.18);
+	transition: transform var(--aurora-dur-3) var(--aurora-ease-spring),
+		box-shadow var(--aurora-dur-3) var(--aurora-ease);
+	position: relative;
+	overflow: visible;
+}
+
+.desktop-wrapper .icon-container img {
+	border-radius: 15px;
+	display: block;
+}
+
+/* the accent glow that blooms under a hovered tile */
+.desktop-wrapper .icon-container::after {
+	content: "";
+	position: absolute;
+	inset: 12% 6% -18% 6%;
+	border-radius: 18px;
+	background: var(--aurora-gradient);
+	filter: blur(14px);
+	opacity: 0;
+	z-index: -1;
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease);
+	pointer-events: none;
+}
+
+.desktop-wrapper .desktop-icon:hover .icon-container {
+	transform: translateY(-2px) scale(1.09);
+	box-shadow: 0 6px 14px -4px hsl(var(--aurora-shadow-color) / 0.26),
+		0 14px 30px -10px hsl(var(--aurora-shadow-color) / 0.2);
+}
+
+.desktop-wrapper .desktop-icon:hover .icon-container::after {
+	opacity: 0.42;
+}
+
+.desktop-wrapper .icon-container:has(.icon) {
+	background-color: var(--subtle-fg);
+}
+
+/* --- captions ------------------------------------------------------------ */
+.desktop-wrapper .icon-title {
+	font-weight: var(--weight-medium);
+	font-size: var(--text-sm);
+	letter-spacing: var(--aurora-tracking-snug);
+	color: var(--text-color);
+	transition: color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.desktop-wrapper .desktop-icon:hover .icon-title {
+	color: var(--aurora-700);
+}
+
+[data-theme="dark"] .desktop-wrapper .desktop-icon:hover .icon-title {
+	color: var(--aurora-300);
+}
+
+.desktop-wrapper .icon-subtitle {
+	color: var(--text-muted);
+}
+
+/* --- entrance ------------------------------------------------------------
+   Stamped with --aurora-i by js/theme/desktop.js so the grid cascades in.
+   -------------------------------------------------------------------------- */
+.desktop-wrapper .icons > .desktop-icon.aurora-desk-in {
+	animation: aurora-desk-icon-in var(--aurora-dur-4) var(--aurora-ease-spring) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 26ms);
+}
+
+@keyframes aurora-desk-icon-in {
+	from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.88); }
+	to { opacity: 1; transform: none; }
+}
+
+/* --- folders ------------------------------------------------------------- */
+.desktop-wrapper .folder-icon {
+	background-color: var(--aurora-glass) !important;
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	border: 1px solid var(--aurora-glass-border);
+	box-shadow: var(--shadow-sm);
+	border-radius: 15px;
+}
+
+.desktop-wrapper .desktop-icon:hover .folder-icon {
+	box-shadow: var(--shadow-md);
+}
+
+/* --- pagination dots ----------------------------------------------------- */
+.desktop-wrapper .page-indicator {
+	background: var(--aurora-200);
+	transition: width var(--aurora-dur-3) var(--aurora-ease-spring),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.desktop-wrapper .page-indicator.active-page {
+	background: var(--aurora-gradient) !important;
+	width: 22px;
+	border-radius: 999px;
+}
+
+.desktop-wrapper .left-page-arrow,
+.desktop-wrapper .right-page-arrow {
+	border-radius: var(--border-radius-full);
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.desktop-wrapper .left-page-arrow:hover,
+.desktop-wrapper .right-page-arrow:hover {
+	background: var(--aurora-soft);
+	transform: scale(1.12);
+}
+
+/* -----------------------------------------------------------------------------
+   Folder modal
+   -------------------------------------------------------------------------- */
+.desktop-modal {
+	-webkit-backdrop-filter: blur(18px) saturate(160%);
+	backdrop-filter: blur(18px) saturate(160%);
+	background-color: var(--aurora-scrim);
+}
+
+.desktop-modal .modal-dialog .modal-content {
+	border-radius: var(--border-radius-2xl);
+	border: 1px solid var(--aurora-glass-border);
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(24px);
+	backdrop-filter: saturate(180%) blur(24px);
+	box-shadow: var(--shadow-2xl);
+}
+
+.desktop-modal .title-input-wrapper input,
+.desktop-modal .title-input-label {
+	letter-spacing: var(--aurora-tracking-snug);
+}
+
+.desktop-modal .title-input-wrapper input:focus {
+	border-color: transparent;
+	outline: none;
+	box-shadow: none;
+	border-bottom: 1px solid var(--aurora-400);
+}
+
+/* -----------------------------------------------------------------------------
+   Edit mode
+   -------------------------------------------------------------------------- */
+.desktop-wrapper .desktop-icon.desktop-edit-mode {
+	border-color: var(--aurora-ring);
+	border-style: dashed;
+	animation: aurora-jiggle 2.4s var(--aurora-ease) infinite;
+}
+
+/* the classic homescreen wobble, kept subtle */
+@keyframes aurora-jiggle {
+	0%, 100% { transform: rotate(-0.45deg); }
+	50% { transform: rotate(0.45deg); }
+}
+
+.desktop-wrapper .desktop-icon .hide-button {
+	background-color: var(--red-500);
+	--icon-stroke: #fff;
+	color: #fff;
+	box-shadow: var(--shadow-md);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.desktop-wrapper .desktop-icon .hide-button:hover {
+	transform: scale(1.18);
+}
+
+.desktop-wrapper .add-new-icon {
+	border: 1.5px dashed var(--border-color);
+	transition: border-color var(--aurora-dur-2) var(--aurora-ease),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.desktop-wrapper .add-new-icon:hover {
+	border-color: var(--aurora-400);
+	background-color: var(--aurora-softer);
+}
+
+.desktop-wrapper .desktop-edit {
+	background-color: var(--aurora-500);
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-lg);
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-spring);
+}
+
+.desktop-wrapper .desktop-edit:hover {
+	transform: scale(1.08);
+}
+
+/* -----------------------------------------------------------------------------
+   Side pane (edit mode icon picker)
+   -------------------------------------------------------------------------- */
+.desktop-wrapper .desktop-pane {
+	background-color: var(--aurora-glass) !important;
+	-webkit-backdrop-filter: saturate(180%) blur(20px);
+	backdrop-filter: saturate(180%) blur(20px);
+	border-left: 1px solid var(--border-color);
+	animation: aurora-pane-in var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+}
+
+@keyframes aurora-pane-in {
+	from { opacity: 0; transform: translateX(16px); }
+	to { opacity: 1; transform: none; }
+}
+
+.desktop-wrapper .pane-header {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-snug);
+}
+
+/* -----------------------------------------------------------------------------
+   The launcher has its own chrome, so the theme's floating dock would collide
+   with the edit button in the same corner. Lift it clear.
+   -------------------------------------------------------------------------- */
+body[data-route="desktop"] .aurora-dock {
+	bottom: 118px;
+}
+
+body[data-route="desktop"] .aurora-to-top {
+	display: none;
+}
+
+/* =============================================================================
+   App icon tinting
+   -----------------------------------------------------------------------------
+   App logos are per-app raster/SVG assets, so they cannot be re-coloured by
+   setting a CSS colour — there is nothing in the page to set it on. What CSS can
+   do is rotate their hue.
+
+   ERPNext/Frappe app icons are drawn in one blue (#2490EF, hue ~208), so
+   rotating by (accent - 208) lands them on the chosen accent, and because the
+   rotation is expressed against `--aurora-h` it follows the accent picker live
+   with no JS at all.
+
+   Greys (Framework, Frappe Framework) have no saturation, so hue-rotate leaves
+   them alone — which is the correct outcome: they are not brand-coloured.
+   -------------------------------------------------------------------------- */
+:root {
+	/* the hue the stock app icons are authored in */
+	--aurora-app-icon-source-h: 208;
+	--aurora-app-icon-shift: calc((var(--aurora-h) - var(--aurora-app-icon-source-h)) * 1deg);
+}
+
+/* Every place an app logo is drawn as an <img>. The launcher grid was the only
+   one covered before, which is why the workspace-switcher dropdown and the
+   folder modal kept their stock blue — the modal is appended to <body>, not
+   inside `.desktop-wrapper`, and dropdown items use `img.logo`. */
+html[data-aurora-app-icons="1"] .icon-container img,
+html[data-aurora-app-icons="1"] .icon-container .app-logo,
+html[data-aurora-app-icons="1"] .desktop-modal .icon-container img,
+html[data-aurora-app-icons="1"] .dropdown-menu-item .sidebar-item-icon img,
+html[data-aurora-app-icons="1"] .sidebar-item-icon img.logo,
+html[data-aurora-app-icons="1"] img.logo,
+html[data-aurora-app-icons="1"] .sidebar-header .header-logo img,
+html[data-aurora-app-icons="1"] .navbar-home img,
+html[data-aurora-app-icons="1"] .app-logo img {
+	filter: hue-rotate(var(--aurora-app-icon-shift));
+	transition: filter var(--aurora-dur-4) var(--aurora-ease);
+}
+
+/* =============================================================================
+   Folder tiles
+   -----------------------------------------------------------------------------
+   A folder renders a miniature grid of the icons it contains. With one or two
+   children the grid stays top-left anchored, so the tile reads as a mostly-empty
+   box with a speck in the corner — which is what "Accounting" looks like.
+   Centring the mini grid makes any number of children look deliberate.
+   ========================================================================== */
+.desktop-wrapper .folder-icon > .icons-container,
+.desktop-wrapper .folder-icon .icons-container {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+}
+
+.desktop-wrapper .folder-icon .icons {
+	place-content: center;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	gap: 3px;
+}
+
+/* a lone child should sit in the middle at a readable size, not in a corner */
+.desktop-wrapper .folder-icon .icons > .desktop-icon:only-child .icon-container {
+	height: 26px;
+	width: 26px;
+}
+
+.desktop-wrapper .folder-icon .icons > .desktop-icon:only-child .icon-container img {
+	width: 26px;
+	height: 26px;
+}
+
+.desktop-wrapper .folder-icon .icon-container {
+	box-shadow: none;
+}
+
+.desktop-wrapper .folder-icon .icon-container::after {
+	display: none; /* no per-thumbnail glow inside a folder */
+}

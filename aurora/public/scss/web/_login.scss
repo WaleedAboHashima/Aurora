@@ -1,0 +1,447 @@
+/* =============================================================================
+   Aurora — login, signup, forgot-password and reset-password
+   -----------------------------------------------------------------------------
+   SPECIFICITY NOTE: login.html includes `login.bundle.css` from inside the page
+   BODY (line 88), while `web_include_css` — which is how this file arrives — is
+   emitted in the HEAD. Core therefore wins every tie on equal specificity.
+
+   `.for-login` and friends sit on a <section>, so prefixing each selector with
+   `section` adds a type selector and takes the cascade back. That is why every
+   rule below is written `section.for-login …` rather than `.for-login …`.
+   ========================================================================== */
+
+/* one line: Sass does not permit a literal newline inside a quoted string */
+$login-sections: "section.for-login, section.for-email-login, section.for-forgot, section.for-login-with-email-link, section.for-signup, section.for-reset-password";
+
+/* The same six sections folded into one `:is()`. A rule prefixed with
+   `$login-sections` is emitted six times; that is fine for the one-off rules
+   above, but the primary-button rules have to be restated for every interaction
+   state, and six sections x six states is 36 copies of the same declarations.
+   `:is()` keeps the specificity (its weight is that of its heaviest argument)
+   while emitting once. */
+$login-scope: "section:is(.for-login, .for-email-login, .for-forgot, .for-login-with-email-link, .for-signup, .for-reset-password)";
+
+/* every state core's login.bundle.scss touches, likewise in one selector */
+$btn-states: ":is(:hover, :focus, :focus-visible, :active, :disabled)";
+
+/* the three buttons core paints `var(--gray-900)` */
+$login-btns: ":is(.btn-login, .btn-ldap-login, .btn-signup:not(:disabled))";
+
+/* -----------------------------------------------------------------------------
+   Canvas — a full-bleed aurora field instead of a flat grey page
+   -------------------------------------------------------------------------- */
+html body {
+	background-color: var(--aurora-login-canvas);
+	background-image:
+		radial-gradient(
+			120vmax 90vmax at 8% -14%,
+			hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.16),
+			transparent 62%
+		),
+		radial-gradient(
+			100vmax 80vmax at 100% 112%,
+			hsl(var(--aurora-alt-h) 70% 60% / 0.13),
+			transparent 60%
+		);
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+	color: var(--aurora-login-ink);
+}
+
+html body .page-content-wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 0;
+	min-height: 100vh;
+}
+
+/* the language picker floats rather than sitting in a navbar band */
+html body .navbar {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+/* -----------------------------------------------------------------------------
+   The card
+   -------------------------------------------------------------------------- */
+#{$login-sections} {
+	.page-card {
+		max-width: 408px;
+		padding: 34px 32px 30px;
+		gap: 22px;
+
+		background: var(--aurora-login-surface);
+		border: 1px solid var(--aurora-login-line);
+		border-radius: 20px;
+		box-shadow: 0 1px 2px hsl(var(--aurora-shadow-color) / 0.06),
+			0 12px 28px -12px hsl(var(--aurora-shadow-color) / 0.22),
+			0 40px 80px -32px hsl(var(--aurora-shadow-color) / 0.28);
+
+		animation: aurora-login-in 520ms var(--aurora-ease-out) backwards;
+	}
+
+	/* a hairline of accent along the top edge */
+	.page-card {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.page-card::before {
+		content: "";
+		position: absolute;
+		inset: 0 0 auto 0;
+		height: 3px;
+		background: var(--aurora-gradient);
+	}
+
+	/* --- head ------------------------------------------------------------- */
+	.page-card-head {
+		gap: 18px;
+	}
+
+	.page-card-head img.app-logo {
+		max-height: 40px;
+		padding: 7px;
+		border-radius: 12px;
+		background: var(--aurora-soft);
+		box-shadow: inset 0 0 0 1px var(--aurora-ring);
+		box-sizing: content-box;
+	}
+
+	.page-card-head h4 {
+		font-size: 26px;
+		letter-spacing: -0.02em;
+		color: var(--aurora-login-ink);
+	}
+
+	.page-card-head .page-card-subtitle {
+		color: var(--aurora-login-muted);
+		line-height: 1.5;
+	}
+
+	/* --- fields ----------------------------------------------------------- */
+	.page-card .page-card-body .form-label {
+		font-size: 12px;
+		font-weight: 500;
+		color: var(--aurora-login-muted);
+	}
+
+	.page-card .page-card-body input[type="text"],
+	.page-card .page-card-body input[type="email"],
+	.page-card .page-card-body input[type="password"] {
+		height: 42px;
+		width: 100%;
+		padding: 10px 12px 10px 40px;
+		border: none;
+		border-radius: 11px;
+		background-color: var(--aurora-login-canvas);
+		color: var(--aurora-login-ink);
+		box-shadow: inset 0 0 0 1px var(--aurora-login-line);
+		transition: box-shadow 200ms var(--aurora-ease),
+			background-color 200ms var(--aurora-ease);
+	}
+
+	.page-card .page-card-body input:hover:not(:focus) {
+		box-shadow: inset 0 0 0 1px var(--aurora-300);
+	}
+
+	.page-card .page-card-body input:focus {
+		outline: none;
+		background-color: var(--aurora-login-surface);
+		box-shadow: inset 0 0 0 1px var(--aurora-500), 0 0 0 3px var(--aurora-ring);
+	}
+
+	.page-card .page-card-body .field-icon,
+	.page-card .page-card-body .toggle-password {
+		fill: var(--aurora-login-muted);
+		transition: fill 200ms var(--aurora-ease);
+	}
+
+	.page-card .page-card-body .email-field:focus-within .field-icon,
+	.page-card .page-card-body .password-field:focus-within .field-icon {
+		fill: var(--aurora-500);
+	}
+
+	.page-card .page-card-body .field-icon {
+		left: 14px;
+	}
+
+	.page-card .page-card-body .password-field .toggle-password {
+		right: 13px;
+	}
+
+	.page-card .page-card-body .password-field .toggle-password:hover {
+		fill: var(--aurora-600);
+	}
+
+	/* --- banners ---------------------------------------------------------- */
+	.page-card .page-card-body .login-error-banner,
+	.page-card .page-card-body .login-success-banner {
+		position: relative;
+		padding: 9px 12px 9px 14px;
+		border-radius: 10px;
+		line-height: 1.45;
+	}
+
+	.page-card .page-card-body .login-error-banner::before,
+	.page-card .page-card-body .login-success-banner::before {
+		content: "";
+		position: absolute;
+		inset: 7px auto 7px 0;
+		width: 3px;
+		border-radius: 999px;
+		background: currentColor;
+		opacity: 0.6;
+	}
+
+	/* the primary buttons are styled outside this block — see "Actions" below */
+
+	/* secondary / provider buttons */
+	.page-card .page-card-actions .btn-login-option {
+		height: 40px;
+		border-radius: 11px;
+		font-weight: 500;
+		background: var(--aurora-login-canvas);
+		color: var(--aurora-login-ink);
+		box-shadow: inset 0 0 0 1px var(--aurora-login-line);
+		transition: background-color 200ms var(--aurora-ease),
+			box-shadow 200ms var(--aurora-ease),
+			transform 160ms var(--aurora-ease-out);
+	}
+
+	.page-card .page-card-actions .btn-login-option:hover {
+		background: var(--aurora-softer);
+		box-shadow: inset 0 0 0 1px var(--aurora-300);
+		transform: translateY(-1px);
+	}
+
+	/* --- links ------------------------------------------------------------ */
+	.page-card .forgot-password-message > *,
+	.page-card .resend-link a {
+		color: var(--aurora-600);
+		text-decoration: none;
+		transition: color 160ms var(--aurora-ease);
+	}
+
+	.page-card .forgot-password-message > *:hover {
+		color: var(--aurora-700);
+		text-decoration: underline;
+	}
+
+	/* --- reset-password strength ------------------------------------------ */
+	.password-strength-container .password-strength-bar-track {
+		height: 5px;
+		border-radius: 999px;
+		background: var(--aurora-login-canvas);
+		box-shadow: inset 0 0 0 1px var(--aurora-login-line);
+	}
+
+	.password-strength-container .password-strength-bar-fill {
+		border-radius: 999px;
+		transition: width 320ms var(--aurora-ease-out), background-color 200ms var(--aurora-ease);
+	}
+
+	/* --- shake on a bad login --------------------------------------------- */
+	.invalid-login {
+		animation: aurora-login-shake 420ms var(--aurora-ease);
+	}
+}
+
+/* the "don't have an account?" line under the card.
+   Core scopes this as `.for-login .sign-up-message` (0,2,0), so a bare class
+   here would lose — it needs the section prefix like everything else. */
+#{$login-sections} {
+	.sign-up-message {
+		color: var(--aurora-login-muted);
+	}
+
+	.sign-up-message a {
+		color: var(--aurora-600);
+		text-decoration: none;
+	}
+
+	.sign-up-message a:hover {
+		text-decoration: underline;
+	}
+}
+
+/* -----------------------------------------------------------------------------
+   Actions — the primary buttons
+   -----------------------------------------------------------------------------
+   Core styles these as `background: var(--gray-900)`, and `var(--gray-800)` on
+   `:hover, :focus, :active`. Two things follow from that:
+
+     * it is the `background` *shorthand*, so it resets `background-image` to
+       none — declaring our gradient once on a stateless rule is not enough,
+       because core's state rules out-specify it and blank it out;
+     * `:focus` is in that list, and focus survives a click.
+
+   Left alone, hovering wiped the gradient (white text on a now-transparent
+   button) and clicking left the button flat charcoal until focus moved away.
+   Hence: restate the paint on every state core touches.
+   -------------------------------------------------------------------------- */
+#{$login-scope} .page-card .page-card-actions #{$login-btns},
+#{$login-scope} .page-card .page-card-actions #{$login-btns}#{$btn-states} {
+	background-color: transparent;
+	background-image: var(--aurora-gradient);
+	background-size: 160% 160%;
+	color: #fff;
+	border: none;
+	box-shadow: 0 2px 5px -1px hsl(var(--aurora-shadow-color) / 0.2),
+		0 8px 18px -8px var(--aurora-glow);
+}
+
+#{$login-scope} .page-card .page-card-actions #{$login-btns} {
+	height: 42px;
+	padding: 0 14px;
+	border-radius: 11px;
+	font-weight: 500;
+	background-position: 0% 50%;
+	transition: background-position 480ms var(--aurora-ease),
+		transform 120ms var(--aurora-ease-out),
+		box-shadow 200ms var(--aurora-ease);
+}
+
+/* after the rule above, so a button that is hovered *and* focused still lifts */
+#{$login-scope} .page-card .page-card-actions #{$login-btns}:is(:hover, :focus-visible) {
+	background-position: 100% 50%;
+	transform: translateY(-1px);
+	box-shadow: 0 3px 7px -1px hsl(var(--aurora-shadow-color) / 0.22),
+		0 14px 26px -10px var(--aurora-glow);
+}
+
+#{$login-scope} .page-card .page-card-actions #{$login-btns}:active {
+	transform: translateY(0) scale(0.985);
+}
+
+#{$login-scope} .page-card .page-card-actions .btn-login:disabled {
+	opacity: 0.65;
+}
+
+/* -----------------------------------------------------------------------------
+   Hand-off to the desk
+   -----------------------------------------------------------------------------
+   On a successful login core replaces the entire <body> with
+   `templates/includes/splash_screen.html` and then sets `location.href`
+   (login.js `login_handlers[200]`). So this markup is the last frame of the
+   login page and the first frame of the sign-in transition — it is not scoped
+   under `.for-login`, because that section no longer exists by then.
+
+   The desk half of the animation lives in `theme/_entrance.scss`; the two are
+   deliberately the same bloom, so the accent expanding here is the accent
+   retracting there and the whole sign-in reads as one movement.
+   -------------------------------------------------------------------------- */
+html body .splash {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* `.centered` — which core also puts on this element — carries
+	   `transform: translate(-50%, -50%)`. That is meant to centre a
+	   shrink-to-fit absolute box, but this rule has already made the element a
+	   full-viewport fixed layer, so the translate drags the whole 1280x720 layer
+	   up and left by half the viewport (measured: x=-640, y=-360) and the mark
+	   lands in the top-left corner. It only snapped to the middle once the desk
+	   loaded, because the desk-side rule in theme/_entrance.scss does reset this
+	   and the web-side one did not. */
+	transform: none;
+	background-color: var(--aurora-login-canvas);
+	background-image: radial-gradient(
+			60vmax 60vmax at 50% 50%,
+			hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.3),
+			transparent 70%
+		),
+		radial-gradient(90vmax 70vmax at 12% 108%, hsl(var(--aurora-alt-h) 78% 62% / 0.22), transparent 64%);
+	animation: aurora-splash-bloom 620ms var(--aurora-ease-out) both;
+}
+
+html body .splash img {
+	width: auto;
+	max-width: 168px;
+	filter: drop-shadow(0 12px 34px var(--aurora-glow));
+	animation: aurora-splash-mark 760ms var(--aurora-ease-spring) both;
+}
+
+/* the ring that pushes outward behind the logo */
+html body .splash::after {
+	content: "";
+	position: absolute;
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+	border: 2px solid var(--aurora-500);
+	animation: aurora-splash-ring 900ms var(--aurora-ease-out) infinite;
+}
+
+@keyframes aurora-splash-bloom {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes aurora-splash-mark {
+	0% { opacity: 0; transform: scale(0.8); }
+	60% { opacity: 1; transform: scale(1.04); }
+	100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes aurora-splash-ring {
+	0% { opacity: 0.5; transform: scale(0.6); }
+	100% { opacity: 0; transform: scale(1.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html body .splash,
+	html body .splash img,
+	html body .splash::after {
+		animation: none;
+	}
+	html body .splash::after { display: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   Motion
+   -------------------------------------------------------------------------- */
+@keyframes aurora-login-in {
+	from { opacity: 0; transform: translateY(14px) scale(0.985); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-login-shake {
+	0%, 100% { transform: translateX(0); }
+	22% { transform: translateX(-5px); }
+	55% { transform: translateX(5px); }
+	80% { transform: translateX(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#{$login-sections} .page-card { animation: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   Mobile — full-bleed sheet, no floating card
+   -------------------------------------------------------------------------- */
+@media (max-width: 575px) {
+	#{$login-sections} {
+		.page-card {
+			max-width: 100%;
+			min-height: 100svh;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+			padding: 56px 26px 32px;
+			background: var(--aurora-login-surface);
+		}
+
+		.page-card::before {
+			display: none;
+		}
+	}
+
+	html body .page-content-wrapper {
+		min-height: 100svh;
+	}
+}

@@ -1,0 +1,263 @@
+/* =============================================================================
+   Aurora — tables
+   -----------------------------------------------------------------------------
+   Three different table engines live in the desk and each needs its own hand:
+     .form-grid   — child tables inside a form (frappe's own markup)
+     .datatable   — report view / query report (frappe-datatable, canvas-ish DOM)
+     table.table  — plain bootstrap tables in dialogs, print previews, dashboards
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Child tables
+   -------------------------------------------------------------------------- */
+.form-grid {
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-md);
+	background-color: var(--card-bg);
+	overflow: hidden;
+	transition: border-color var(--aurora-dur-2) var(--aurora-ease),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.form-grid:focus-within {
+	border-color: var(--aurora-ring);
+	box-shadow: 0 0 0 3px var(--aurora-softer);
+}
+
+.grid-heading-row {
+	background-color: var(--subtle-accent);
+	border-bottom: 1px solid var(--border-color);
+	color: var(--text-muted);
+}
+
+.grid-heading-row .grid-row {
+	background-color: transparent;
+}
+
+/* rows: zebra-free, separated by hairlines, with an accent edge on hover */
+.form-grid .grid-body .grid-row {
+	position: relative;
+	background-color: var(--card-bg);
+	border-bottom: 1px solid var(--border-color);
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.form-grid .grid-body .grid-row::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	background: var(--aurora-gradient);
+	transform: scaleY(0);
+	transform-origin: center;
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring);
+	pointer-events: none;
+}
+
+.form-grid .grid-body .grid-row:hover:not(.grid-row-open) {
+	background-color: var(--aurora-softer);
+}
+
+.form-grid .grid-body .grid-row:hover::before,
+.form-grid .grid-body .grid-row.grid-row-open::before {
+	transform: scaleY(1);
+}
+
+.form-grid .grid-body .grid-row:last-child {
+	border-bottom: none;
+}
+
+/* the expanded row detail */
+.grid-row-open {
+	box-shadow: var(--shadow-base);
+	background-color: var(--fg-color) !important;
+}
+
+.grid-row-open .grid-form-heading {
+	background-color: var(--subtle-accent);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.grid-row .grid-form-body,
+.grid-row-open .form-area {
+	animation: aurora-rise-sm var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+}
+
+/* editable cells */
+.grid-static-col {
+	border-radius: var(--border-radius-tiny);
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease),
+		box-shadow var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.grid-static-col:focus-visible,
+.grid-static-col:focus {
+	outline: none;
+	box-shadow: inset 0 0 0 2px var(--aurora-400);
+	background-color: var(--aurora-softer);
+}
+
+.form-grid .data-row .form-control:focus {
+	box-shadow: inset 0 0 0 2px var(--aurora-400);
+	background-color: var(--fg-color);
+}
+
+/* row index + checkbox column */
+.form-grid .row-index,
+.form-grid .row-check {
+	color: var(--text-muted);
+	transition: color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.form-grid .grid-row:hover .row-index {
+	color: var(--aurora-600);
+}
+
+/* drag handle only when it can be used */
+.form-grid .sortable-handle {
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.form-grid .grid-row.sortable-chosen {
+	box-shadow: var(--aurora-lift);
+	border-radius: var(--border-radius-sm);
+	transform: scale(1.005);
+}
+
+.form-grid .grid-row.sortable-ghost {
+	opacity: 0.35;
+}
+
+/* footer toolbar */
+.grid-footer,
+.grid-footer-toolbar {
+	background-color: var(--subtle-accent);
+	border-top: 1px solid var(--border-color);
+}
+
+.grid-add-row,
+.grid-download,
+.grid-upload {
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.grid-add-row:hover {
+	transform: translateX(2px);
+	color: var(--aurora-600);
+}
+
+.grid-empty {
+	color: var(--text-muted);
+	border-radius: var(--border-radius-sm);
+}
+
+/* -----------------------------------------------------------------------------
+   Datatable (report view, query reports)
+   -------------------------------------------------------------------------- */
+.datatable {
+	border-radius: var(--border-radius-md);
+	overflow: hidden;
+	border: 1px solid var(--border-color);
+}
+
+.dt-row-header,
+.dt-row-header .dt-cell {
+	background-color: var(--subtle-accent) !important;
+	color: var(--text-muted);
+	border-bottom: 1px solid var(--border-color) !important;
+}
+
+.dt-cell {
+	border-right-color: var(--border-color) !important;
+	border-bottom-color: var(--border-color) !important;
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.dt-row:hover .dt-cell,
+.dt-cell--highlight {
+	background-color: var(--aurora-softer) !important;
+}
+
+.dt-cell--focus {
+	box-shadow: inset 0 0 0 2px var(--aurora-400) !important;
+	background-color: var(--fg-color) !important;
+}
+
+.dt-cell--editing {
+	box-shadow: inset 0 0 0 2px var(--aurora-500) !important;
+}
+
+.dt-row--highlight .dt-cell,
+.dt-row-filter {
+	background-color: var(--aurora-softer) !important;
+}
+
+.dt-toast,
+.dt-dropdown__list {
+	border-radius: var(--border-radius-md);
+	box-shadow: var(--shadow-lg);
+	border: 1px solid var(--border-color);
+}
+
+.dt-dropdown__list-item {
+	border-radius: var(--border-radius-sm);
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.dt-dropdown__list-item:hover {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+}
+
+/* column resize / sort affordances */
+.dt-cell__resize-handle:hover {
+	background-color: var(--aurora-400);
+}
+
+.dt-cell__content--header .dt-dropdown__toggle {
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* tree/total rows in financial reports carry weight */
+.dt-row-totalRow .dt-cell,
+.dt-cell.total-row,
+.report-wrapper .dt-row:last-child .dt-cell {
+	font-weight: var(--weight-semibold);
+}
+
+/* -----------------------------------------------------------------------------
+   Plain tables (dialogs, print preview, dashboards)
+   -------------------------------------------------------------------------- */
+table.table {
+	border-color: var(--border-color);
+}
+
+table.table thead th {
+	background-color: var(--subtle-accent);
+	border-bottom: 1px solid var(--border-color);
+	color: var(--text-muted);
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-wide);
+	text-transform: uppercase;
+	font-size: var(--text-tiny);
+}
+
+table.table tbody tr {
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+table.table tbody tr:hover {
+	background-color: var(--aurora-softer);
+}
+
+table.table td,
+table.table th {
+	border-color: var(--border-color);
+}
+
+/* first and last cells follow the container's rounding */
+table.table thead th:first-child { border-top-left-radius: var(--border-radius-sm); }
+table.table thead th:last-child { border-top-right-radius: var(--border-radius-sm); }

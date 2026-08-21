@@ -1,0 +1,267 @@
+/* =============================================================================
+   Aurora — design tokens
+   -----------------------------------------------------------------------------
+   Frappe/ERPNext is themed almost entirely through CSS custom properties that
+   are declared in `frappe/public/scss/espresso/*` and `scss/common/css_variables`.
+   Because this bundle is injected *after* frappe's and erpnext's bundles, simply
+   re-declaring those same properties here re-skins the whole desk without
+   touching a single line of the core apps.
+
+   Everything accent-coloured derives from three numbers (--aurora-h/s/l) so the
+   in-app accent picker can repaint the entire product by writing one variable.
+
+   NOTE: Sass does not evaluate the value of a custom property, it passes it
+   through as plain CSS. That is what makes the hsl()/calc() plumbing below legal.
+   ========================================================================== */
+
+:root {
+	/* --- accent seed ------------------------------------------------------ */
+	--aurora-h: 256;
+	--aurora-s: 84%;
+	--aurora-l: 60%;
+
+	--aurora-50: hsl(var(--aurora-h) var(--aurora-s) 97%);
+	--aurora-100: hsl(var(--aurora-h) var(--aurora-s) 94%);
+	--aurora-200: hsl(var(--aurora-h) var(--aurora-s) 88%);
+	--aurora-300: hsl(var(--aurora-h) var(--aurora-s) 80%);
+	--aurora-400: hsl(var(--aurora-h) var(--aurora-s) 70%);
+	--aurora-500: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l));
+	--aurora-600: hsl(var(--aurora-h) var(--aurora-s) calc(var(--aurora-l) - 8%));
+	--aurora-700: hsl(var(--aurora-h) var(--aurora-s) calc(var(--aurora-l) - 16%));
+	--aurora-800: hsl(var(--aurora-h) var(--aurora-s) calc(var(--aurora-l) - 26%));
+	--aurora-900: hsl(var(--aurora-h) var(--aurora-s) calc(var(--aurora-l) - 34%));
+
+	--aurora: var(--aurora-500);
+	--aurora-soft: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.12);
+	--aurora-softer: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.06);
+	--aurora-ring: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.22);
+	--aurora-glow: hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.42);
+
+	/* A near-neighbour hue for gradients and washes. Kept close (+30) on purpose:
+	   at +66 a red accent produced a yellow-green partner, so every gradient and
+	   the ambient wash read as two fighting colours instead of one family. */
+	--aurora-alt-h: calc(var(--aurora-h) + 30);
+	--aurora-alt: hsl(var(--aurora-alt-h) 88% 62%);
+	--aurora-alt-soft: hsl(var(--aurora-alt-h) 88% 62% / 0.12);
+
+	/* THE gradient. Every accent-filled surface in the theme paints with this —
+	   primary buttons, checkboxes, section markers, the active sidebar pill,
+	   list-row edges, progress bars, tab underlines. Change it here and it
+	   changes everywhere; the "Gradients" switch below flattens it to a solid. */
+	--aurora-gradient: linear-gradient(135deg, var(--aurora-500) 0%, var(--aurora-alt) 100%);
+	--aurora-gradient-soft: linear-gradient(
+		135deg,
+		hsl(var(--aurora-h) var(--aurora-s) var(--aurora-l) / 0.14) 0%,
+		hsl(var(--aurora-alt-h) 88% 62% / 0.14) 100%
+	);
+
+	/* --- motion ----------------------------------------------------------- */
+	--aurora-dur-1: 110ms; /* taps, ripples, colour swaps          */
+	--aurora-dur-2: 200ms; /* hovers, small transforms             */
+	--aurora-dur-3: 320ms; /* panels, entrances                    */
+	--aurora-dur-4: 520ms; /* page level choreography              */
+
+	--aurora-ease: cubic-bezier(0.4, 0, 0.2, 1);
+	--aurora-ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* decisive settle    */
+	--aurora-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoot   */
+	--aurora-ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+
+	/* stagger step used by the reveal engine */
+	--aurora-stagger: 34ms;
+
+	/* --- geometry --------------------------------------------------------- */
+	--aurora-radius-scale: 1; /* driven by the density/shape control */
+
+	--border-radius-tiny: calc(5px * var(--aurora-radius-scale));
+	--border-radius-sm: calc(9px * var(--aurora-radius-scale));
+	--border-radius: calc(10px * var(--aurora-radius-scale));
+	--border-radius-md: calc(12px * var(--aurora-radius-scale));
+	--border-radius-lg: calc(16px * var(--aurora-radius-scale));
+	--border-radius-xl: calc(20px * var(--aurora-radius-scale));
+	--border-radius-2xl: calc(26px * var(--aurora-radius-scale));
+	--border-radius-full: 999px;
+
+	/* --- elevation -------------------------------------------------------- */
+	--aurora-shadow-color: 232 20% 40%;
+
+	--shadow-xs: 0 1px 2px hsl(var(--aurora-shadow-color) / 0.06),
+		0 0 0 1px hsl(var(--aurora-shadow-color) / 0.05);
+	--shadow-sm: 0 1px 2px hsl(var(--aurora-shadow-color) / 0.07),
+		0 2px 6px -2px hsl(var(--aurora-shadow-color) / 0.08);
+	--shadow-base: 0 1px 3px hsl(var(--aurora-shadow-color) / 0.09),
+		0 6px 14px -6px hsl(var(--aurora-shadow-color) / 0.14);
+	--shadow-md: 0 2px 6px hsl(var(--aurora-shadow-color) / 0.08),
+		0 10px 22px -8px hsl(var(--aurora-shadow-color) / 0.18);
+	--shadow-lg: 0 4px 10px hsl(var(--aurora-shadow-color) / 0.08),
+		0 18px 38px -12px hsl(var(--aurora-shadow-color) / 0.22);
+	--shadow-xl: 0 8px 18px hsl(var(--aurora-shadow-color) / 0.1),
+		0 30px 60px -18px hsl(var(--aurora-shadow-color) / 0.26);
+	--shadow-2xl: 0 12px 26px hsl(var(--aurora-shadow-color) / 0.12),
+		0 44px 88px -24px hsl(var(--aurora-shadow-color) / 0.3);
+
+	--aurora-lift: 0 10px 24px -10px hsl(var(--aurora-h) 40% 30% / 0.28),
+		0 2px 6px -2px hsl(var(--aurora-shadow-color) / 0.1);
+
+	--card-shadow: var(--shadow-sm);
+	--modal-shadow: var(--shadow-2xl);
+	--btn-shadow: none;
+
+	/* --- focus ------------------------------------------------------------ */
+	--focus-default: 0 0 0 2px var(--aurora-ring);
+	--focus-blue: 0 0 0 2px var(--aurora-ring);
+	--checkbox-focus-shadow: 0 0 0 2px var(--aurora-ring);
+
+	/* --- density ---------------------------------------------------------- */
+	--aurora-density: 1;
+	--aurora-row-h: calc(38px * var(--aurora-density));
+	--aurora-gutter: calc(16px * var(--aurora-density));
+
+	/* --- surfaces (light) ------------------------------------------------- */
+	--aurora-canvas: #f6f7fb;
+	--aurora-surface: #ffffff;
+	--aurora-surface-2: #fbfbfe;
+	--aurora-hairline: hsl(var(--aurora-h) 18% 90%);
+	--aurora-hairline-strong: hsl(var(--aurora-h) 16% 84%);
+	--aurora-glass: hsl(0 0% 100% / 0.72);
+	--aurora-glass-border: hsl(0 0% 100% / 0.6);
+	--aurora-scrim: hsl(var(--aurora-h) 30% 12% / 0.42);
+}
+
+/* -----------------------------------------------------------------------------
+   Light theme mapping — re-point frappe's own tokens at the Aurora palette.
+   -------------------------------------------------------------------------- */
+:root,
+[data-theme="light"] {
+	--primary: var(--aurora-500);
+	--primary-color: var(--aurora-600);
+	--brand-color: var(--aurora-500);
+
+	--bg-color: var(--aurora-canvas);
+	--fg-color: var(--aurora-surface);
+	--card-bg: var(--aurora-surface);
+	--modal-bg: var(--aurora-surface);
+	--popover-bg: var(--aurora-surface);
+	--toast-bg: var(--aurora-surface);
+	--surface-modal: var(--aurora-surface);
+	--surface-menu-bar: transparent;
+
+	--subtle-accent: hsl(var(--aurora-h) 40% 97%);
+	--subtle-fg: hsl(var(--aurora-h) 34% 95%);
+	--fg-hover-color: var(--aurora-softer);
+	--highlight-color: hsl(var(--aurora-h) 60% 98%);
+	--control-bg: hsl(var(--aurora-h) 30% 96%);
+	--control-bg-on-gray: hsl(var(--aurora-h) 30% 93%);
+	--awesomebar-focus-bg: var(--aurora-surface);
+	--awesomplete-hover-bg: var(--aurora-soft);
+
+	--border-color: var(--aurora-hairline);
+	--dark-border-color: var(--aurora-hairline-strong);
+	--table-border-color: var(--aurora-hairline);
+	--border-primary: var(--aurora-500);
+
+	--btn-primary: var(--aurora-500);
+	--btn-default-bg: hsl(var(--aurora-h) 24% 96%);
+	--btn-default-hover-bg: hsl(var(--aurora-h) 28% 92%);
+	--btn-ghost-hover-bg: var(--aurora-soft);
+
+	--sidebar-hover-color: var(--aurora-soft);
+	--sidebar-active-color: var(--aurora-surface);
+	--sidebar-border-color: transparent;
+	--sidebar-select-color: var(--aurora-soft);
+	--divider-color: var(--aurora-hairline);
+
+	--scrollbar-thumb-color: hsl(var(--aurora-h) 20% 78%);
+	--scrollbar-track-color: transparent;
+
+	--progress-bar-bg: var(--aurora-500);
+	--checkbox-color: var(--aurora-500);
+	--checkbox-gradient: var(--aurora-gradient);
+	--switch-bg: hsl(var(--aurora-h) 20% 84%);
+
+	--highlight-shadow: 0 0 0 3px var(--aurora-ring);
+	--shadow-inset: inset 0 -1px 0 var(--aurora-hairline);
+}
+
+/* -----------------------------------------------------------------------------
+   Dark theme — a deep, slightly blue-violet night rather than flat grey.
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+	--aurora-l: 66%;
+	--aurora-shadow-color: var(--aurora-h) 60% 3%;
+
+	--aurora-canvas: hsl(var(--aurora-h) 22% 8%);
+	--aurora-surface: hsl(var(--aurora-h) 18% 11%);
+	--aurora-surface-2: hsl(var(--aurora-h) 18% 13%);
+	--aurora-hairline: hsl(var(--aurora-h) 14% 20%);
+	--aurora-hairline-strong: hsl(var(--aurora-h) 14% 26%);
+	--aurora-glass: hsl(var(--aurora-h) 20% 13% / 0.72);
+	--aurora-glass-border: hsl(var(--aurora-h) 30% 40% / 0.22);
+	--aurora-scrim: hsl(var(--aurora-h) 40% 4% / 0.62);
+
+	--bg-color: var(--aurora-canvas);
+	--fg-color: var(--aurora-surface);
+	--card-bg: var(--aurora-surface);
+	--modal-bg: var(--aurora-surface-2);
+	--popover-bg: var(--aurora-surface-2);
+	--toast-bg: var(--aurora-surface-2);
+	--surface-modal: var(--aurora-surface-2);
+	--surface-white: var(--aurora-surface);
+	--surface-menu-bar: transparent;
+
+	--subtle-accent: hsl(var(--aurora-h) 16% 15%);
+	--subtle-fg: hsl(var(--aurora-h) 16% 18%);
+	--fg-hover-color: hsl(var(--aurora-h) 20% 18%);
+	--highlight-color: hsl(var(--aurora-h) 20% 16%);
+	--control-bg: hsl(var(--aurora-h) 16% 16%);
+	--control-bg-on-gray: hsl(var(--aurora-h) 16% 20%);
+	--awesomebar-focus-bg: var(--aurora-surface-2);
+
+	--border-color: var(--aurora-hairline);
+	--dark-border-color: var(--aurora-hairline-strong);
+	--table-border-color: var(--aurora-hairline);
+
+	--btn-default-bg: hsl(var(--aurora-h) 16% 18%);
+	--btn-default-hover-bg: hsl(var(--aurora-h) 16% 23%);
+	--btn-primary: var(--aurora-500);
+
+	--sidebar-hover-color: hsl(var(--aurora-h) 20% 18%);
+	--sidebar-active-color: hsl(var(--aurora-h) 20% 20%);
+	--sidebar-border-color: transparent;
+	--divider-color: var(--aurora-hairline);
+
+	--scrollbar-thumb-color: hsl(var(--aurora-h) 14% 30%);
+
+	--text-color: hsl(var(--aurora-h) 14% 88%);
+	--heading-color: hsl(var(--aurora-h) 20% 96%);
+	--text-muted: hsl(var(--aurora-h) 10% 62%);
+}
+
+/* -----------------------------------------------------------------------------
+   Shape + density presets, written onto <html> by the Aurora control panel.
+   -------------------------------------------------------------------------- */
+html[data-aurora-shape="sharp"] { --aurora-radius-scale: 0.35; }
+html[data-aurora-shape="soft"] { --aurora-radius-scale: 1; }
+html[data-aurora-shape="round"] { --aurora-radius-scale: 1.55; }
+
+html[data-aurora-density="compact"] { --aurora-density: 0.86; }
+html[data-aurora-density="cozy"] { --aurora-density: 1; }
+html[data-aurora-density="roomy"] { --aurora-density: 1.18; }
+
+/* -----------------------------------------------------------------------------
+   Flat mode
+   -----------------------------------------------------------------------------
+   Rather than hunting down each gradient, redefine the two gradient tokens as
+   solid fills. Every consumer keeps using `var(--aurora-gradient)` and simply
+   renders flat — buttons, checkboxes, markers, pills, bars, all of it.
+   -------------------------------------------------------------------------- */
+html[data-aurora-gradients="0"] {
+	--aurora-gradient: linear-gradient(var(--aurora-500), var(--aurora-500));
+	--aurora-gradient-soft: linear-gradient(var(--aurora-soft), var(--aurora-soft));
+}
+
+/* the primary button animates its gradient position on hover — pointless flat,
+   and it would read as a dead hover state, so give it a colour shift instead */
+html[data-aurora-gradients="0"] .btn.btn-primary:hover,
+html[data-aurora-gradients="0"] .btn-primary:hover {
+	background: var(--aurora-600);
+}

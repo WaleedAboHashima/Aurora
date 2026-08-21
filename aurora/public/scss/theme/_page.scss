@@ -1,0 +1,187 @@
+/* =============================================================================
+   Aurora — page chrome: sticky head, breadcrumbs, transitions
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Page head — frosted, and it condenses as you scroll (js/theme/page_head.js
+   toggles `.aurora-condensed` past 24px of scroll).
+   -------------------------------------------------------------------------- */
+.page-head {
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(18px);
+	backdrop-filter: saturate(180%) blur(18px);
+	border-bottom: 1px solid transparent;
+	transition: border-color var(--aurora-dur-3) var(--aurora-ease),
+		box-shadow var(--aurora-dur-3) var(--aurora-ease),
+		background-color var(--aurora-dur-3) var(--aurora-ease),
+		top 0.5s var(--aurora-ease);
+}
+
+.page-head.aurora-condensed {
+	border-bottom-color: var(--border-color);
+	box-shadow: 0 6px 18px -14px hsl(var(--aurora-shadow-color) / 0.5);
+}
+
+.page-head .page-head-content {
+	transition: height var(--aurora-dur-3) var(--aurora-ease-out);
+}
+
+.page-head .title-area {
+	animation: aurora-rise-sm var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+}
+
+/* --- breadcrumbs --------------------------------------------------------- */
+.navbar-breadcrumbs li a {
+	border-radius: var(--border-radius-sm);
+	padding: 2px 6px;
+	transition: background-color var(--aurora-dur-1) var(--aurora-ease),
+		color var(--aurora-dur-1) var(--aurora-ease);
+}
+
+.navbar-breadcrumbs li a:hover {
+	background: var(--aurora-soft);
+	color: var(--aurora-700);
+	text-decoration: none;
+}
+
+.navbar-breadcrumbs li {
+	animation: aurora-slide-in-left var(--aurora-dur-3) var(--aurora-ease-out) backwards;
+	animation-delay: calc(var(--aurora-i, 0) * 40ms);
+}
+
+/* --- page body ----------------------------------------------------------- */
+.layout-main-section.frappe-card,
+.layout-main-section-wrapper > .frappe-card {
+	border-radius: var(--border-radius-lg);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-sm);
+}
+
+.page-form {
+	border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+/* -----------------------------------------------------------------------------
+   Route transition — `.page-container` is shown/hidden by
+   frappe.views.Container.change_to(); we animate whichever one becomes visible.
+   js/theme/transitions.js stamps `.aurora-page-enter` on it.
+   -------------------------------------------------------------------------- */
+.page-container.aurora-page-enter {
+	animation: aurora-page-in var(--aurora-dur-4) var(--aurora-ease-out) backwards;
+}
+
+@keyframes aurora-page-in {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 10px, 0) scale(0.994);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* Direction-aware variant used when the user navigates back. */
+.page-container.aurora-page-enter-back {
+	animation: aurora-page-in-back var(--aurora-dur-4) var(--aurora-ease-out) backwards;
+}
+
+@keyframes aurora-page-in-back {
+	from {
+		opacity: 0;
+		transform: translate3d(-14px, 0, 0);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* -----------------------------------------------------------------------------
+   Route progress bar (js/theme/progress.js)
+   -------------------------------------------------------------------------- */
+.aurora-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2.5px;
+	z-index: 2000;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 200ms var(--aurora-ease);
+	overflow: hidden;
+}
+
+.aurora-progress.active {
+	opacity: 1;
+}
+
+.aurora-progress .aurora-progress-bar {
+	height: 100%;
+	width: 0;
+	background: var(--aurora-gradient);
+	box-shadow: 0 0 12px var(--aurora-glow);
+	transform-origin: left center;
+	transition: width 220ms var(--aurora-ease-out);
+}
+
+.aurora-progress.indeterminate .aurora-progress-bar {
+	width: 100%;
+	animation: aurora-indeterminate 1.1s var(--aurora-ease) infinite;
+}
+
+/* -----------------------------------------------------------------------------
+   Back-to-top pill (js/theme/scroll_top.js)
+   -------------------------------------------------------------------------- */
+.aurora-to-top {
+	position: fixed;
+	right: 22px;
+	bottom: 22px;
+	z-index: 1030;
+	width: 40px;
+	height: 40px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--border-color);
+	border-radius: 999px;
+	background: var(--aurora-glass);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+	color: var(--text-color);
+	box-shadow: var(--shadow-lg);
+	cursor: pointer;
+	opacity: 0;
+	transform: translateY(14px) scale(0.9);
+	pointer-events: none;
+	transition: opacity var(--aurora-dur-3) var(--aurora-ease),
+		transform var(--aurora-dur-3) var(--aurora-ease-spring),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.aurora-to-top.visible {
+	opacity: 1;
+	transform: none;
+	pointer-events: auto;
+}
+
+.aurora-to-top:hover {
+	background: var(--aurora-500);
+	color: #fff;
+	border-color: transparent;
+	transform: translateY(-2px) scale(1.05);
+}
+
+/* the ring shows how far down the page you are */
+.aurora-to-top .aurora-to-top-ring {
+	position: absolute;
+	inset: -1px;
+	border-radius: 999px;
+	background: conic-gradient(
+		var(--aurora-500) calc(var(--aurora-scroll, 0) * 1turn),
+		transparent 0
+	);
+	-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 0);
+	mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 0);
+	pointer-events: none;
+}

@@ -1,0 +1,234 @@
+/* =============================================================================
+   Aurora — the desk shell
+   -----------------------------------------------------------------------------
+   The v16 desk is a two-part frame: a left rail (`.body-sidebar`, 50px collapsed
+   / 220px expanded, overlaying the content when expanded) and the page area.
+   This file treats that frame as one designed object rather than two.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Collapsed rail — the state the desk spends most of its life in.
+   Icon-only, centred, with the hover pill and the active marker doing all the
+   communicating. Stock frappe leaves this almost unstyled.
+   -------------------------------------------------------------------------- */
+/* Core already sizes this rail and does it fine: `.item-anchor` is 28px tall
+   with `flex: 1`, and `.sidebar-item-icon` is a 7px-padded flex box that centres
+   its glyph. Earlier revisions of this file replaced that with fixed 36px and
+   20px boxes and made the rail visibly worse — a 50px column has no slack, so
+   every imposed dimension fought something.
+
+   The theme now changes only colour, state and what is hidden here. Every
+   dimension is left to core. */
+.body-sidebar-container:not(.expanded) .standard-sidebar-item .item-anchor {
+	justify-content: center;
+	border-radius: var(--border-radius-md);
+}
+
+/* nothing to slide toward in a 50px rail */
+.body-sidebar-container:not(.expanded) .standard-sidebar-item .item-anchor:hover {
+	transform: none;
+}
+
+/* The active pill is already painted by `.item-anchor::before` in _sidebar.scss.
+   Don't stack a second background on the anchor — just drop the inset ring,
+   which reads as a hard box at this width. */
+.body-sidebar-container:not(.expanded) .active-sidebar .item-anchor::before {
+	box-shadow: none;
+}
+
+/* the edge bar needs margin either side of it; there is none here */
+.body-sidebar-container:not(.expanded) .active-sidebar .item-anchor::after {
+	display: none;
+}
+
+/* THIS is what made the active item look shifted against the inactive ones:
+   at `opacity: 0` the label still claims its flex width, so `justify-content:
+   center` was centring the icon *plus an invisible label* — pushing the glyph
+   left of centre, while the active background still spanned the full row.
+   Removing them from layout lets the icon actually sit in the middle. */
+.body-sidebar-container:not(.expanded) .sidebar-item-label,
+.body-sidebar-container:not(.expanded) .sidebar-item-suffix,
+.body-sidebar-container:not(.expanded) .sidebar-item-control,
+.body-sidebar-container:not(.expanded) .avatar-name-email {
+	display: none;
+}
+
+/* Section breaks carry only a label, which is hidden above — so the row would
+   otherwise be blank. A centred rule reads as the separator it is. */
+.body-sidebar-container:not(.expanded) .section-item {
+	pointer-events: none;
+}
+
+.body-sidebar-container:not(.expanded) .section-item .item-anchor {
+	position: relative;
+	justify-content: center;
+}
+
+.body-sidebar-container:not(.expanded) .section-item .item-anchor::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 18px;
+	height: 1px;
+	margin-top: -0.5px;
+	transform: translateX(-50%);
+	background: var(--border-color);
+	border-radius: 999px;
+	opacity: 1;
+}
+
+/* The workspace header: core makes it 48px tall and full width, which in the
+   rail paints a tall rectangle behind a small logo. A square target matches it. */
+.body-sidebar-container:not(.expanded) .sidebar-header {
+	justify-content: center;
+	border-radius: var(--border-radius-md);
+}
+
+.body-sidebar-container:not(.expanded) .sidebar-header:hover {
+	background: var(--aurora-soft);
+}
+
+.body-sidebar-container:not(.expanded) .sidebar-header .title-container,
+.body-sidebar-container:not(.expanded) .sidebar-header .drop-icon {
+	display: none;
+}
+
+/* --- expanded rail ------------------------------------------------------- */
+.body-sidebar-container.expanded .body-sidebar {
+	box-shadow: var(--shadow-xl);
+	border-right: 1px solid var(--border-color);
+}
+
+.body-sidebar-container.expanded .standard-sidebar-item .item-anchor {
+	padding-right: 6px;
+}
+
+.body-sidebar-container.expanded .sidebar-item-label {
+	animation: aurora-fade-in var(--aurora-dur-3) var(--aurora-ease) backwards;
+	animation-delay: 60ms;
+}
+
+/* -----------------------------------------------------------------------------
+   Sidebar workspace header
+   -------------------------------------------------------------------------- */
+.sidebar-header .header-title {
+	font-weight: var(--weight-semibold);
+	letter-spacing: var(--aurora-tracking-snug);
+	color: var(--heading-color);
+}
+
+.sidebar-header .header-subtitle {
+	color: var(--text-muted);
+	font-size: var(--text-tiny);
+}
+
+/* -----------------------------------------------------------------------------
+   Sidebar bottom cluster — user card, onboarding, banners
+   -------------------------------------------------------------------------- */
+.body-sidebar-bottom {
+	border-top: 1px solid var(--border-color);
+	padding-top: 8px;
+}
+
+.body-sidebar .onboarding-sidebar,
+.body-sidebar .promotional-banner {
+	border-radius: var(--border-radius-sm);
+	padding: 5px 7px;
+	transition: background-color var(--aurora-dur-2) var(--aurora-ease),
+		transform var(--aurora-dur-2) var(--aurora-ease-out),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.body-sidebar .onboarding-sidebar:hover,
+.body-sidebar .promotional-banner:hover {
+	background-color: var(--aurora-soft);
+	color: var(--aurora-700);
+	transform: translateX(2px);
+	text-decoration: none;
+}
+
+.body-sidebar .sidebar-user-button {
+	border-radius: var(--border-radius-md);
+}
+
+.body-sidebar .sidebar-user-button .avatar-frame {
+	box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 3px var(--aurora-ring);
+	transition: box-shadow var(--aurora-dur-3) var(--aurora-ease);
+}
+
+.body-sidebar .sidebar-user-button:hover .avatar-frame {
+	box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px var(--aurora-500);
+}
+
+/* --- collapse control ---------------------------------------------------- */
+.collapse-sidebar-link {
+	border-radius: 999px !important;
+	box-shadow: var(--shadow-base);
+	background: var(--card-bg);
+	border: 1px solid var(--border-color);
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-spring),
+		background-color var(--aurora-dur-2) var(--aurora-ease),
+		color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.collapse-sidebar-link:hover {
+	transform: scale(1.14);
+	background: var(--aurora-500);
+	border-color: transparent;
+	--icon-stroke: #fff;
+	color: #fff;
+}
+
+.sidebar-resize-handle:hover {
+	background: var(--aurora-ring);
+}
+
+/* -----------------------------------------------------------------------------
+   Page area
+   -------------------------------------------------------------------------- */
+.main-section,
+#body {
+	min-width: 0;
+}
+
+.layout-main-section-wrapper {
+	padding-bottom: calc(24px * var(--aurora-density));
+}
+
+/* the workspace home reads as a page, not a wall of boxes */
+.layout-main-section .workspace-title,
+.page-title .title-text {
+	letter-spacing: var(--aurora-tracking-tight);
+}
+
+/* frappe's editable workspace toolbar */
+.workspace-footer,
+.codex-editor__redactor {
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease);
+}
+
+/* -----------------------------------------------------------------------------
+   Notifications panel anchored off the rail
+   -------------------------------------------------------------------------- */
+.body-sidebar .dropdown-notifications .notifications-list {
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-2xl);
+	border: 1px solid var(--border-color);
+	overflow: hidden;
+}
+
+/* -----------------------------------------------------------------------------
+   Mobile shell
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+	.body-sidebar-container.expanded .body-sidebar {
+		border-radius: 0 var(--border-radius-xl) var(--border-radius-xl) 0;
+	}
+
+	.body-sidebar-container.expanded .overlay {
+		background-color: var(--aurora-scrim) !important;
+		-webkit-backdrop-filter: blur(4px);
+		backdrop-filter: blur(4px);
+	}
+}

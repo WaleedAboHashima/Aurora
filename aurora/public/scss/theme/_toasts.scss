@@ -1,0 +1,366 @@
+/* =============================================================================
+   Aurora — toasts
+   -----------------------------------------------------------------------------
+   Core's toast tints the ENTIRE card with a pale alert colour (--toast-bg), puts
+   a bold message next to an icon, and indents the subtitle by a magic 34px. The
+   result is washy: the colour carries no information once the whole surface is
+   coloured, and the text sits on a tinted ground that hurts contrast.
+
+   This redesign keeps the semantic colour but moves it to two places where it
+   actually reads — a rail down the leading edge and a filled icon chip — and
+   returns the card itself to a normal surface. Same markup, no JS changes.
+
+     .desk-alert
+       .alert-message-container
+         .alert-title-container   > icon + .alert-message
+         .alert-subtitle
+       .alert-body
+       .next-action-container     > .next-action buttons
+       a.close
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Stack
+   -------------------------------------------------------------------------- */
+/* The corner is a user setting (`toast_position`), written onto <html> as
+   `data-aurora-toast-pos` by js/theme/settings.js. Every anchor is declared
+   here rather than in JS so switching corners is one attribute change and
+   costs no layout work.
+
+   `inset: auto` first, then only the two edges each corner needs — otherwise a
+   previously-set `right` survives a switch to a left-hand corner and the stack
+   ends up stretched across the viewport. */
+#alert-container {
+	position: fixed;
+	inset: auto;
+	bottom: 18px;
+	right: 18px;
+	z-index: 2000;
+	display: flex;
+	flex-direction: column; /* newest last = nearest a bottom anchor */
+	gap: 10px;
+	pointer-events: none;
+	max-width: calc(100vw - 36px);
+}
+
+#alert-container > * {
+	pointer-events: auto;
+}
+
+/* --- top row: sit clear of the navbar, and stack downward ----------------- */
+html[data-aurora-toast-pos^="top"] #alert-container {
+	inset: auto;
+	top: calc(var(--navbar-height, 60px) + 14px);
+	/* reversed, so the newest is again the one nearest the anchor edge */
+	flex-direction: column-reverse;
+}
+
+html[data-aurora-toast-pos="top-left"] #alert-container,
+html[data-aurora-toast-pos="bottom-left"] #alert-container {
+	left: 18px;
+	right: auto;
+	align-items: flex-start;
+}
+
+html[data-aurora-toast-pos="top-right"] #alert-container,
+html[data-aurora-toast-pos="bottom-right"] #alert-container {
+	right: 18px;
+	left: auto;
+	align-items: flex-end;
+}
+
+/* centre: anchor the midpoint, not an edge */
+html[data-aurora-toast-pos="top-center"] #alert-container,
+html[data-aurora-toast-pos="bottom-center"] #alert-container {
+	left: 50%;
+	right: auto;
+	transform: translateX(-50%);
+	align-items: center;
+}
+
+html[data-aurora-toast-pos^="bottom"] #alert-container {
+	top: auto;
+	bottom: 18px;
+}
+
+/* the entrance should travel from the edge the toast is docked to */
+html[data-aurora-toast-pos$="-left"] .desk-alert {
+	--aurora-toast-from: -24px;
+}
+
+html[data-aurora-toast-pos$="-center"] .desk-alert {
+	--aurora-toast-from: 0px;
+}
+/* -----------------------------------------------------------------------------
+   The card
+   -----------------------------------------------------------------------------
+   Deliberately stripped back from the previous revision, which carried BOTH a
+   coloured rail down the leading edge AND a tinted plate behind the icon AND a
+   full-width timer bar. Three separate things all saying the same word, on a
+   surface 380px wide — it read as clutter rather than as emphasis.
+
+   One carrier of semantic colour now: the glyph. Everything else is neutral.
+   -------------------------------------------------------------------------- */
+.desk-alert {
+	--aurora-toast-accent: var(--aurora-500);
+
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+
+	width: min(360px, calc(100vw - 36px));
+	box-sizing: border-box;
+	min-height: 0;
+	max-height: none;
+	overflow: hidden;
+	padding: 14px 14px 14px 16px;
+
+	background-color: var(--modal-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 14px;
+	box-shadow: 0 1px 2px hsl(var(--aurora-shadow-color) / 0.08),
+		0 12px 28px -12px hsl(var(--aurora-shadow-color) / 0.3);
+	-webkit-backdrop-filter: saturate(180%) blur(14px);
+	backdrop-filter: saturate(180%) blur(14px);
+
+	transition: transform var(--aurora-dur-2) var(--aurora-ease-out),
+		box-shadow var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.desk-alert:hover {
+	/* lean away from whichever edge it is docked to */
+	transform: translateX(calc(var(--aurora-toast-from, 24px) * -0.125));
+	box-shadow: 0 2px 4px hsl(var(--aurora-shadow-color) / 0.1),
+		0 18px 40px -14px hsl(var(--aurora-shadow-color) / 0.36);
+}
+
+/* --- semantic colour ------------------------------------------------------ */
+.desk-alert.green { --aurora-toast-accent: var(--green-500); }
+.desk-alert.red { --aurora-toast-accent: var(--red-500); }
+.desk-alert.orange,
+.desk-alert.yellow { --aurora-toast-accent: var(--orange-500); }
+.desk-alert.blue { --aurora-toast-accent: var(--blue-500); }
+
+/* core also sets --toast-bg and tints the whole card with it; keep the surface
+   neutral so the text sits on a proper ground */
+.desk-alert.green,
+.desk-alert.red,
+.desk-alert.orange,
+.desk-alert.yellow,
+.desk-alert.blue {
+	--toast-bg: var(--modal-bg);
+}
+
+/* -----------------------------------------------------------------------------
+   Contents
+
+     .desk-alert
+       .alert-message-container
+         .alert-title-container  > div > svg.icon   +  .alert-message
+         .alert-subtitle
+       .alert-body
+       a.close
+   -------------------------------------------------------------------------- */
+.desk-alert .alert-message-container {
+	flex: 1;
+	min-width: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.desk-alert .alert-title-container {
+	display: flex;
+	align-items: center; /* centred: the message is one line in the common case */
+	gap: 11px;
+	min-width: 0;
+}
+
+/* --- the glyph ------------------------------------------------------------
+   `show_alert` picks `solid-success` / `solid-error` / `solid-info`, and each of
+   those is a SINGLE filled path using `fill-rule: evenodd` — a disc with the
+   mark cut out of it. Two consequences:
+
+     * it already IS a badge, so the tinted plate the old design put behind it
+       just added a grey box around a coloured disc;
+     * a stroke paints an outline around an already-filled shape, which is the
+       same outline-vs-solid trap `.icon` vs `.es-icon` sets elsewhere. Hence
+       `stroke-width: 0` rather than merely leaving the stroke unset.
+   -------------------------------------------------------------------------- */
+.desk-alert .alert-title-container > div:first-child {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 20px;
+	height: 20px;
+}
+
+.desk-alert .alert-title-container > div:first-child .icon,
+.desk-alert .alert-title-container > div:first-child .es-icon {
+	width: 19px;
+	height: 19px;
+	margin: 0;
+	fill: var(--aurora-toast-accent);
+	--icon-fill: var(--aurora-toast-accent);
+	stroke: none;
+	stroke-width: 0;
+	--icon-stroke: transparent;
+	/* a whisper of glow, so the one coloured thing carries its weight */
+	filter: drop-shadow(0 1px 4px var(--aurora-toast-accent));
+}
+
+.desk-alert .alert-message {
+	flex: 1;
+	min-width: 0;
+	font-weight: var(--weight-medium);
+	font-size: var(--text-base);
+	line-height: 1.45;
+	color: var(--heading-color);
+	letter-spacing: var(--aurora-tracking-snug);
+	padding: 0;
+}
+
+/* aligned under the message, clearing the glyph */
+.desk-alert .alert-subtitle {
+	padding-left: 31px;
+	margin: 0;
+	font-size: var(--text-xs);
+	line-height: 1.5;
+	color: var(--text-muted);
+}
+
+.desk-alert .alert-subtitle:empty {
+	display: none;
+}
+
+.desk-alert .alert-body {
+	padding: 6px 0 0 31px;
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+}
+
+/* --- close ---------------------------------------------------------------- */
+.desk-alert .close {
+	position: static;
+	flex: none;
+	width: 22px;
+	height: 22px;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	place-items: center;
+	border-radius: 7px;
+	opacity: 0;
+	text-shadow: none;
+	transition: opacity var(--aurora-dur-2) var(--aurora-ease),
+		background-color var(--aurora-dur-2) var(--aurora-ease);
+}
+
+.desk-alert:hover .close,
+.desk-alert:focus-within .close {
+	opacity: 1;
+}
+
+.desk-alert .close:hover {
+	background-color: var(--fg-hover-color);
+}
+
+.desk-alert .close .icon {
+	width: 13px;
+	height: 13px;
+	fill: none;
+	--icon-stroke: var(--text-muted);
+}
+
+.desk-alert .close:hover .icon {
+	--icon-stroke: var(--text-color);
+}
+
+/* --- action buttons ------------------------------------------------------- */
+.desk-alert .next-action-container {
+	padding: 8px 0 0 31px;
+	display: flex;
+	gap: 6px;
+}
+
+.desk-alert .next-action {
+	border-radius: 8px;
+	font-size: var(--text-xs);
+	font-weight: var(--weight-medium);
+}
+
+/* -----------------------------------------------------------------------------
+   Motion
+   -------------------------------------------------------------------------- */
+.desk-alert {
+	animation: aurora-toast-in var(--aurora-dur-3) var(--aurora-ease-spring) backwards;
+}
+
+.desk-alert.out {
+	animation: aurora-toast-out var(--aurora-dur-3) var(--aurora-ease) forwards;
+}
+
+@keyframes aurora-toast-in {
+	from {
+		opacity: 0;
+		transform: translate3d(var(--aurora-toast-from, 24px), 0, 0) scale(0.96);
+	}
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes aurora-toast-out {
+	to {
+		opacity: 0;
+		transform: translate3d(var(--aurora-toast-from, 24px), 0, 0) scale(0.96);
+	}
+}
+
+/* --- the life timer (js/theme/toasts.js stamps --aurora-toast-life) --------
+   Inset from both ends and only 2px, so it reads as a countdown rather than the
+   full-width slab the previous revision drew across the bottom edge. */
+.desk-alert .aurora-toast-timer {
+	position: absolute;
+	left: 14px;
+	right: 14px;
+	bottom: 6px;
+	height: 2px;
+	border-radius: 999px;
+	transform-origin: left center;
+	background: var(--aurora-toast-accent);
+	opacity: 0.28;
+	animation: aurora-toast-drain linear forwards;
+	animation-duration: var(--aurora-toast-life, 7s);
+}
+
+/* reading a message should not cost you the time to read it */
+.desk-alert:hover .aurora-toast-timer {
+	animation-play-state: paused;
+	opacity: 0.5;
+}
+
+@keyframes aurora-toast-drain {
+	from { transform: scaleX(1); }
+	to { transform: scaleX(0); }
+}
+
+html[data-aurora-motion="off"] .desk-alert,
+html[data-aurora-toast-timers="0"] .desk-alert .aurora-toast-timer {
+	animation: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Mobile — full width, docked to the bottom
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+	#alert-container {
+		left: 10px;
+		right: 10px;
+		bottom: 10px;
+	}
+
+	.desk-alert {
+		width: auto;
+	}
+}
