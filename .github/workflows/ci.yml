@@ -1,0 +1,163 @@
+name: CI
+
+on:
+  push:
+    branches: [version-16]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Aurora is v16-only by design (see pyproject's frappe-dependencies comment).
+  # Kept here so retargeting is a one-line change.
+  FRAPPE_BRANCH: version-16
+  # Actions does not expand `~` in `working-directory`, so the bench path has to
+  # be spelled out. It is the runner's home on ubuntu-latest.
+  BENCH_DIR: /home/runner/frappe-bench
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Same ruff version as .pre-commit-config.yaml, so CI and a local commit
+      # cannot disagree about what passes. Blocking: the tree is clean today.
+      - name: Ruff
+        run: |
+          pip install ruff==0.14.10
+          ruff check aurora/
+          ruff format --check aurora/
+
+      # Advisory, not blocking. 33 files predate .prettierrc and have never had
+      # prettier run on them, so gating on this would fail every PR for reasons
+      # unrelated to the PR. Flip to blocking once the tree has been formatted
+      # once in its own commit.
+      - name: Prettier (advisory)
+        continue-on-error: true
+        run: npx --yes prettier@2.7.1 --check "aurora/public/**/*.{js,scss}"
+
+  install:
+    name: Install on Frappe v16
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=15
+
+      redis-cache:
+        image: redis:alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:alpine
+        ports:
+          - 11000:6379
+
+    steps:
+      - name: Check out Aurora
+        uses: actions/checkout@v4
+        with:
+          path: aurora
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libmysqlclient-dev mariadb-client wkhtmltopdf
+          npm install -g yarn
+
+      - name: Set up bench
+        run: |
+          pip install frappe-bench
+          bench init \
+            --skip-redis-config-generation \
+            --frappe-branch "$FRAPPE_BRANCH" \
+            --python "$(which python)" \
+            "$BENCH_DIR"
+
+      - name: Point bench at the service containers
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench set-config -g db_host 127.0.0.1
+          bench set-config -g redis_cache    redis://127.0.0.1:13000
+          bench set-config -g redis_queue    redis://127.0.0.1:11000
+          bench set-config -g redis_socketio redis://127.0.0.1:11000
+          # asset manifests are cached in redis; without this a rebuild is not
+          # served, which is exactly the failure the README warns about
+          bench set-config -g developer_mode 1
+
+      - name: Create a test site
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench new-site test.localhost \
+            --db-root-password root \
+            --admin-password admin \
+            --mariadb-user-host-login-scope='%'
+
+      # The actual regression this job exists to catch: that Aurora still
+      # installs, migrates and builds against the current v16 tree. That is what
+      # a Frappe release breaks, and what anyone depending on Aurora needs to
+      # know before they upgrade rather than after.
+      - name: Install Aurora
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench get-app aurora "${GITHUB_WORKSPACE}/aurora"
+          bench --site test.localhost install-app aurora
+          bench --site test.localhost migrate
+
+      - name: Build assets
+        working-directory: /home/runner/frappe-bench
+        run: bench build --app aurora
+
+      - name: Verify the bundles were emitted
+        working-directory: /home/runner/frappe-bench
+        run: |
+          set -euo pipefail
+          for bundle in aurora.bundle aurora_web.bundle; do
+            for kind in js css; do
+              dir="sites/assets/aurora/dist/${kind}"
+              if ! ls "${dir}/${bundle}."*".${kind}" >/dev/null 2>&1; then
+                echo "::error::${bundle}.${kind} was not built into ${dir}"
+                exit 1
+              fi
+            done
+          done
+          echo "All four Aurora bundles built."
+
+      # Imports aurora.api inside a real site context and exercises the
+      # whitelisted read path. Cheap, but it is what catches the import-time and
+      # signature breakage a framework upgrade actually causes.
+      - name: Smoke-test the server API
+        working-directory: /home/runner/frappe-bench
+        run: bench --site test.localhost execute aurora.api.get_theme

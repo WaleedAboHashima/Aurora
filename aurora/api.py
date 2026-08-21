@@ -1,3 +1,6 @@
+# Copyright (c) 2026, Waleed AboHashima and Contributors
+# License: GNU General Public License v3. See LICENSE
+
 """Aurora theme — server side.
 
 The theme is configured entirely from the in-app Appearance panel, so all this
@@ -246,6 +249,13 @@ SHEET_MAX_COLS = 40
 SHEET_MAX_CELL_LEN = 300
 SHEET_EXTENSIONS = (".xlsx", ".xlsm")
 
+# An .xlsx is a zip, and the row/column caps below only bound what we *emit* —
+# they do nothing about what openpyxl has to inflate to get there. A few hundred
+# KB of crafted archive can expand to gigabytes, and a preview nobody asked to
+# wait for is not worth an OOM. Refuse oversized files up front instead: the
+# viewer already knows how to say "download it to see all of it".
+SHEET_MAX_BYTES = 12 * 1024 * 1024
+
 
 def _check_read(doc) -> None:
 	"""Refuse unless the caller may already see this file's contents.
@@ -334,6 +344,13 @@ def preview_sheet(file_url: str, sheet: str | None = None) -> dict:
 
 	doc = _resolve_readable_file(file_url)
 	name = (doc.file_name or file_url).lower()
+
+	if doc.file_size and doc.file_size > SHEET_MAX_BYTES:
+		return {
+			"too_large": True,
+			"file_name": doc.file_name,
+			"file_url": doc.file_url,
+		}
 
 	if name.endswith(".csv"):
 		return _preview_csv(doc)

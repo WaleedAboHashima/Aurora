@@ -184,8 +184,14 @@ function basename(url) {
 	return decodeURIComponent(url.split("/").pop().split("?")[0]);
 }
 
+/* `basename()` percent-decodes, which undoes the encoding `new URL()` applied on
+   the way in — so by the time a name reaches here it can hold a raw `<` or `"`
+   again, and this value is interpolated into innerHTML. An extension is
+   alphanumeric by definition, so dropping everything else is both safer and
+   tidier than escaping a string that should never have had markup in it. */
 function ext_of(name) {
-	return (name.split(".").pop() || "file").slice(0, 5).toUpperCase();
+	const ext = (name.split(".").pop() || "").replace(/[^a-z0-9]/gi, "");
+	return (ext || "file").slice(0, 5).toUpperCase();
 }
 
 /* ------------------------------------------------------------------ peek -- */
@@ -444,6 +450,15 @@ function render_sheet(data) {
 			<p>This spreadsheet format can't be previewed.</p>
 			<p class="aurora-ql-muted">Only .xlsx, .xlsm and .csv can be read — the old .xls
 			format cannot. Use Download to open it locally.</p>
+		</div>`;
+	}
+
+	// the server declines to inflate very large workbooks; say so plainly rather
+	// than rendering the empty grid that would otherwise result
+	if (data.too_large) {
+		return `<div class="aurora-ql-sheet-msg">
+			<p>This spreadsheet is too large to preview.</p>
+			<p class="aurora-ql-muted">Use Download to open it locally.</p>
 		</div>`;
 	}
 

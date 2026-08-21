@@ -9,7 +9,7 @@ so two people on the same site can run completely different themes.
 No forked core files. One custom app, hooks only.
 
 ```bash
-bench get-app https://github.com/WaleedAboHashima/aurora-theme --branch version-16
+bench get-app https://github.com/WaleedAboHashima/Aurora --branch version-16
 bench --site your-site install-app aurora
 bench build --app aurora
 ```
@@ -83,7 +83,8 @@ Being honest about what isn't finished:
 - **Dropdowns** — a stacking issue in some report toolbars.
 - **List view tables** — spacing and alignment still being worked through.
 
-Everything else has been used daily on a real site. Issues and PRs welcome.
+Everything else has been used daily on a real site. Issues and PRs welcome —
+see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Development
 
@@ -121,14 +122,23 @@ If you need something more dependable, two things I do offer commercially:
   sites who need upgrades not to break them. Each major Frappe release needs
   compatibility work; this covers doing it on a schedule you can plan around.
 
-Reach out via [GitHub issues](https://github.com/WaleedAboHashima/aurora-theme/issues)
+Reach out via [GitHub issues](https://github.com/WaleedAboHashima/Aurora/issues)
 or LinkedIn.
 
 ## Licence
 
-**Free to use, on any number of sites, including client work.** Not open
-source — you may use and modify it, but not redistribute or resell it. See
-[LICENSE](LICENSE) for the exact terms.
+**GNU General Public License v3.0 or later.** See [LICENSE](LICENSE) for the
+full text.
 
-Shipping a client site with Aurora installed is use, not redistribution, and is
-expressly fine. If it saved you time, a star or a mention is plenty.
+Free to use on any number of sites, including client work and commercial use.
+Install it, modify it, deploy it for clients, fork it — all fine, and no
+permission needed. The one obligation is the usual copyleft one: if you
+distribute Aurora or a derivative of it, the recipient gets the source and the
+same freedoms under the same licence. You cannot take Aurora closed and ship it
+as a proprietary theme.
+
+Note that Frappe Framework is MIT and ERPNext is GPLv3; Aurora's choice of GPL
+is its own, not an obligation inherited from either.
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). If Aurora
+saved you time, a star or a mention is plenty.

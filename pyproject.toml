@@ -6,7 +6,7 @@ authors = [
 description = "Aurora — a per-user appearance layer for Frappe and ERPNext v16"
 requires-python = ">=3.14"
 readme = "README.md"
-license = "LicenseRef-Aurora"
+license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 dynamic = ["version"]
 dependencies = [
