@@ -44,6 +44,8 @@ const DEFAULT_FEATURES = FEATURES.reduce((acc, f) => ({ ...acc, [f.key]: true })
 const DEFAULTS = {
 	hue: 256,
 	sat: 84,
+	custom_hex: "",
+	custom_lightness: null,
 	shape: "soft", // sharp | soft | round
 	density: "cozy", // compact | cozy | roomy
 	font: "system", // system | inter | rounded | custom
@@ -137,6 +139,11 @@ export function apply() {
 
 	root.style.setProperty("--aurora-h", String(state.hue));
 	root.style.setProperty("--aurora-s", `${state.sat}%`);
+	if (state.custom_lightness !== undefined && state.custom_lightness !== null) {
+		root.style.setProperty("--aurora-l", `${state.custom_lightness}%`);
+	} else {
+		root.style.removeProperty("--aurora-l");
+	}
 	root.setAttribute("data-aurora-shape", state.shape);
 	root.setAttribute("data-aurora-density", state.density);
 	root.setAttribute("data-aurora-font", state.font);
