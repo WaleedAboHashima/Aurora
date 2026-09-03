@@ -11,7 +11,7 @@
  */
 import * as settings from "./settings";
 import { ACCENTS, FEATURES, TOAST_POSITIONS } from "./settings";
-import { icon, hue_to_hex, parse_hue_or_hex } from "./utils";
+import { icon, hue_to_hex, parse_hue_or_hex, get_current_hex } from "./utils";
 import { open as open_palette } from "./palette";
 import * as fonts from "./fonts";
 
@@ -83,9 +83,9 @@ function look_tab() {
 				<input type="range" class="aurora-hue" min="0" max="360" value="${s.hue}"
 					aria-label="Accent hue">
 				<div class="aurora-hue-input-group">
-					<input type="color" class="aurora-color-picker" value="${hue_to_hex(s.hue)}"
+					<input type="color" class="aurora-color-picker" value="${get_current_hex(s)}"
 						title="Pick color" aria-label="Pick color">
-					<input type="text" class="aurora-hue-input" value="${hue_to_hex(s.hue)}"
+					<input type="text" class="aurora-hue-input" value="${get_current_hex(s)}"
 						placeholder="#HEX or 0-360" spellcheck="false" autocomplete="off"
 						aria-label="Color hex or hue code" title="Enter Hex color (e.g. #8B5CF6) or Hue (0-360)">
 				</div>
@@ -299,16 +299,17 @@ function bind_panel() {
 		const swatch = e.target.closest(".aurora-swatch");
 		if (swatch) {
 			const hue = Number(swatch.dataset.hue);
-			settings.set({ hue });
+			settings.set({ hue, sat: 84, custom_hex: "", custom_lightness: null });
 			root.querySelectorAll(".aurora-swatch").forEach((s) =>
 				s.classList.toggle("active", Number(s.dataset.hue) === hue)
 			);
 			const slider = root.querySelector(".aurora-hue");
 			if (slider) slider.value = String(hue);
+			const hex = hue_to_hex(hue);
 			const hexInput = root.querySelector(".aurora-hue-input");
-			if (hexInput) hexInput.value = hue_to_hex(hue);
+			if (hexInput) hexInput.value = hex;
 			const picker = root.querySelector(".aurora-color-picker");
-			if (picker) picker.value = hue_to_hex(hue);
+			if (picker) picker.value = hex;
 			return;
 		}
 
@@ -371,7 +372,7 @@ function bind_panel() {
 	root.addEventListener("input", (e) => {
 		if (e.target.classList.contains("aurora-hue")) {
 			const hue = Number(e.target.value);
-			settings.set({ hue });
+			settings.set({ hue, sat: 84, custom_hex: "", custom_lightness: null });
 			const hex = hue_to_hex(hue);
 			const hexInput = root.querySelector(".aurora-hue-input");
 			if (hexInput && document.activeElement !== hexInput) hexInput.value = hex;
@@ -385,15 +386,15 @@ function bind_panel() {
 
 		if (e.target.classList.contains("aurora-color-picker")) {
 			const hex = e.target.value;
-			const hue = parse_hue_or_hex(hex);
-			if (hue !== null) {
-				settings.set({ hue });
+			const parsed = parse_hue_or_hex(hex);
+			if (parsed !== null) {
+				settings.set(parsed);
 				const slider = root.querySelector(".aurora-hue");
-				if (slider) slider.value = String(hue);
+				if (slider) slider.value = String(parsed.hue);
 				const hexInput = root.querySelector(".aurora-hue-input");
-				if (hexInput) hexInput.value = hex;
+				if (hexInput && document.activeElement !== hexInput) hexInput.value = parsed.hex;
 				root.querySelectorAll(".aurora-swatch").forEach((s) =>
-					s.classList.toggle("active", Math.abs(Number(s.dataset.hue) - hue) < 4)
+					s.classList.toggle("active", Math.abs(Number(s.dataset.hue) - parsed.hue) < 4)
 				);
 			}
 			return;
@@ -401,15 +402,15 @@ function bind_panel() {
 
 		if (e.target.classList.contains("aurora-hue-input")) {
 			const val = e.target.value;
-			const hue = parse_hue_or_hex(val);
-			if (hue !== null) {
-				settings.set({ hue });
+			const parsed = parse_hue_or_hex(val);
+			if (parsed !== null) {
+				settings.set(parsed);
 				const slider = root.querySelector(".aurora-hue");
-				if (slider) slider.value = String(hue);
+				if (slider) slider.value = String(parsed.hue);
 				const picker = root.querySelector(".aurora-color-picker");
-				if (picker) picker.value = hue_to_hex(hue);
+				if (picker && document.activeElement !== picker) picker.value = parsed.hex;
 				root.querySelectorAll(".aurora-swatch").forEach((s) =>
-					s.classList.toggle("active", Math.abs(Number(s.dataset.hue) - hue) < 4)
+					s.classList.toggle("active", Math.abs(Number(s.dataset.hue) - parsed.hue) < 4)
 				);
 			}
 			return;
@@ -419,7 +420,7 @@ function bind_panel() {
 	root.addEventListener("change", (e) => {
 		if (e.target.classList.contains("aurora-hue-input")) {
 			const s = settings.get();
-			e.target.value = hue_to_hex(s.hue);
+			e.target.value = get_current_hex(s);
 		}
 	});
 }

@@ -84,16 +84,35 @@ export function hue_to_hex(h, s = 84, l = 60) {
 	return `#${f(0)}${f(8)}${f(4)}`;
 }
 
-/** Convert Hex color string (#rrggbb, rrggbb, #rgb, rgb) or Hue string to Hue number (0..360), or null if invalid */
+/** Get hex representation of current theme settings */
+export function get_current_hex(s) {
+	if (!s) return "#4f46e5";
+	if (s.custom_hex) return s.custom_hex;
+	return hue_to_hex(s.hue, s.sat ?? 84, s.custom_lightness ?? 60);
+}
+
+/** Convert Hex color string (#rrggbb, rrggbb, #rgb, rgb) or Hue string to color object (or null if invalid) */
 export function parse_hue_or_hex(val) {
-	if (typeof val !== "string") return null;
-	const trimmed = val.trim();
+	if (val === null || val === undefined) return null;
+	const trimmed = String(val).trim();
 	if (!trimmed) return null;
 
 	// Check if direct number (hue degree 0..360)
 	if (/^\d+$/.test(trimmed)) {
 		const num = parseInt(trimmed, 10);
-		if (num >= 0 && num <= 360) return num;
+		if (num >= 0 && num <= 360) {
+			const res = {
+				hue: num,
+				sat: 84,
+				custom_lightness: null,
+				custom_hex: "",
+				hex: hue_to_hex(num, 84, 60),
+				valueOf() {
+					return this.hue;
+				},
+			};
+			return res;
+		}
 	}
 
 	// Check if hex code
@@ -108,6 +127,7 @@ export function parse_hue_or_hex(val) {
 		return null;
 	}
 
+	const formattedHex = `#${clean.toUpperCase()}`;
 	const num = parseInt(clean, 16);
 	const r = ((num >> 16) & 255) / 255;
 	const g = ((num >> 8) & 255) / 255;
@@ -117,19 +137,36 @@ export function parse_hue_or_hex(val) {
 	const min = Math.min(r, g, b);
 	const d = max - min;
 
-	if (d === 0) return 0;
-
-	let h;
-	if (max === r) {
-		h = ((g - b) / d) % 6;
-	} else if (max === g) {
-		h = (b - r) / d + 2;
-	} else {
-		h = (r - g) / d + 4;
+	const lightness = (max + min) / 2;
+	let sat = 0;
+	if (d !== 0) {
+		sat = lightness > 0.5 ? d / (2 - max - min) : d / (max + min);
 	}
 
-	h = Math.round(h * 60);
-	if (h < 0) h += 360;
-	return h;
+	let h = 0;
+	if (d !== 0) {
+		if (max === r) {
+			h = ((g - b) / d) % 6;
+		} else if (max === g) {
+			h = (b - r) / d + 2;
+		} else {
+			h = (r - g) / d + 4;
+		}
+		h = Math.round(h * 60);
+		if (h < 0) h += 360;
+	}
+
+	const res = {
+		hue: h,
+		sat: Math.round(sat * 100),
+		custom_lightness: Math.round(lightness * 100),
+		custom_hex: formattedHex,
+		hex: formattedHex,
+		valueOf() {
+			return this.hue;
+		},
+	};
+	return res;
 }
+
 
